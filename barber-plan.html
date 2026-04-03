@@ -1,0 +1,1222 @@
+<!DOCTYPE html>
+<html lang="vi" class="light">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Barber Atelier – Kế hoạch Dự án</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script>
+tailwind.config = {
+  darkMode:"class",
+  theme:{
+    extend:{
+      colors:{
+        "background":"#f7f9ff",
+        "primary":"#006362",
+        "on-primary":"#ffffff",
+        "primary-container":"#1b7d7c",
+        "on-primary-container":"#d0fffd",
+        "primary-fixed":"#9bf1ef",
+        "primary-fixed-dim":"#7fd5d3",
+        "inverse-primary":"#7fd5d3",
+        "secondary":"#5d5f5f",
+        "secondary-container":"#dcdddd",
+        "secondary-fixed":"#e2e2e2",
+        "tertiary":"#864725",
+        "tertiary-container":"#a35f3b",
+        "on-tertiary":"#ffffff",
+        "on-tertiary-container":"#fff3ef",
+        "surface":"#f7f9ff",
+        "surface-dim":"#c9dcf3",
+        "surface-bright":"#f7f9ff",
+        "surface-container-lowest":"#ffffff",
+        "surface-container-low":"#edf4ff",
+        "surface-container":"#e3efff",
+        "surface-container-high":"#d9eaff",
+        "surface-container-highest":"#d1e4fb",
+        "surface-variant":"#d1e4fb",
+        "on-surface":"#091d2e",
+        "on-surface-variant":"#3e4948",
+        "outline":"#6e7979",
+        "outline-variant":"#bdc9c8",
+        "inverse-surface":"#203243",
+        "inverse-on-surface":"#e8f2ff",
+        "error":"#ba1a1a",
+        "error-container":"#ffdad6",
+        "on-error":"#ffffff",
+        "on-error-container":"#93000a",
+      },
+      fontFamily:{"headline":["Manrope"],"body":["Inter"],"label":["Inter"]},
+      borderRadius:{"DEFAULT":"0.25rem","lg":"0.5rem","xl":"0.75rem","full":"9999px"},
+    }
+  }
+}
+</script>
+<style>
+  .material-symbols-outlined{font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24;}
+  body{font-family:'Inter',sans-serif;}
+  h1,h2,h3,.font-headline{font-family:'Manrope',sans-serif;}
+  .glass-panel{background:rgba(255,255,255,0.7);backdrop-filter:blur(12px);}
+  .tag{display:inline-flex;align-items:center;gap:4px;padding:2px 10px;border-radius:9999px;font-size:11px;font-weight:700;letter-spacing:.06em;}
+  .tag-teal{background:#e1f5ee;color:#0f6e56;}
+  .tag-amber{background:#faeeda;color:#854f0b;}
+  .tag-coral{background:#faece7;color:#993c1d;}
+  .tag-blue{background:#e6f1fb;color:#185fa5;}
+  .tag-purple{background:#eeedfe;color:#534ab7;}
+  .tag-gray{background:#f1efe8;color:#5f5e5a;}
+  .section-title{font-family:'Manrope',sans-serif;font-size:22px;font-weight:800;color:#006362;border-left:5px solid #006362;padding-left:14px;margin-bottom:18px;}
+  .card{background:#fff;border:0.5px solid #bdc9c8;border-radius:12px;padding:20px 24px;margin-bottom:16px;}
+  .model-card{background:#fff;border:0.5px solid #bdc9c8;border-radius:12px;padding:16px 20px;transition:all .2s;}
+  .model-card:hover{border-color:#006362;box-shadow:0 0 0 2px #9bf1ef44;}
+  .flow-step{display:flex;align-items:flex-start;gap:14px;padding:12px 0;border-bottom:0.5px solid #edf4ff;}
+  .flow-step:last-child{border-bottom:none;}
+  .step-num{min-width:32px;height:32px;border-radius:50%;background:#006362;color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;}
+  .db-table{width:100%;border-collapse:collapse;font-size:13px;}
+  .db-table th{background:#e3efff;color:#006362;font-weight:700;padding:8px 12px;text-align:left;border:0.5px solid #bdc9c8;}
+  .db-table td{padding:7px 12px;border:0.5px solid #edf4ff;color:#091d2e;vertical-align:top;}
+  .db-table tr:hover td{background:#f7f9ff;}
+  .prompt-box{background:#091d2e;color:#9bf1ef;border-radius:12px;padding:20px 24px;font-size:13px;line-height:1.7;font-family:'Courier New',monospace;}
+  .prompt-box .comment{color:#6e7979;}
+  .prompt-box .keyword{color:#7fd5d3;}
+  .prompt-box .string{color:#ffb692;}
+  .toc-link{display:block;padding:6px 12px;border-radius:8px;color:#3e4948;font-size:13px;font-weight:600;transition:all .15s;}
+  .toc-link:hover{background:#e3efff;color:#006362;}
+  .toc-link.active{background:#006362;color:#fff;}
+  .badge-pk{display:inline-block;background:#9bf1ef;color:#002020;border-radius:4px;padding:1px 6px;font-size:10px;font-weight:800;}
+  .badge-fk{display:inline-block;background:#ffdbcb;color:#341100;border-radius:4px;padding:1px 6px;font-size:10px;font-weight:800;}
+  .badge-idx{display:inline-block;background:#e2e2e2;color:#454747;border-radius:4px;padding:1px 6px;font-size:10px;font-weight:800;}
+  .member-badge{display:inline-flex;align-items:center;gap:6px;background:#e3efff;border-radius:9999px;padding:4px 14px;font-size:12px;font-weight:700;color:#006362;}
+  .endpoint-row{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:0.5px solid #edf4ff;font-size:13px;}
+  .endpoint-row:last-child{border-bottom:none;}
+  .method{min-width:56px;text-align:center;border-radius:6px;padding:2px 0;font-size:11px;font-weight:800;}
+  .get{background:#e6f1fb;color:#185fa5;}
+  .post{background:#e1f5ee;color:#0f6e56;}
+  .put{background:#faeeda;color:#854f0b;}
+  .delete{background:#fcebeb;color:#a32d2d;}
+  .patch{background:#eeedfe;color:#534ab7;}
+  @media print{aside,nav{display:none!important;}main{margin:0!important;}}
+</style>
+</head>
+<body class="bg-background text-on-surface">
+
+<!-- Sidebar -->
+<aside class="hidden md:flex flex-col h-screen w-64 fixed left-0 top-0 overflow-y-auto bg-slate-50 space-y-6 p-6 z-40 border-r border-slate-200/60">
+  <div class="flex items-center gap-3 mb-2">
+    <div class="w-10 h-10 bg-primary-container rounded-xl flex items-center justify-center">
+      <span class="material-symbols-outlined text-white">content_cut</span>
+    </div>
+    <div>
+      <h2 class="font-headline font-extrabold text-base text-teal-900 uppercase tracking-tight">Barber Atelier</h2>
+      <p class="text-[10px] font-bold tracking-widest text-slate-400 uppercase">Project Blueprint</p>
+    </div>
+  </div>
+  <nav class="flex-1 space-y-1">
+    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3 px-3">Nội dung</p>
+    <a class="toc-link" href="#overview">📋 Tổng quan dự án</a>
+    <a class="toc-link" href="#members">👥 Phân công thành viên</a>
+    <a class="toc-link" href="#models">🗃️ Phân tích 10 Model</a>
+    <a class="toc-link" href="#flows">🔄 Luồng hoạt động</a>
+    <a class="toc-link" href="#database">🗄️ Thiết kế CSDL</a>
+    <a class="toc-link" href="#api">📡 Danh sách API</a>
+    <a class="toc-link" href="#payment">💳 Tích hợp SePay</a>
+    <a class="toc-link" href="#folder">📁 Cấu trúc Folder</a>
+    <a class="toc-link" href="#prompts">🤖 Prompt AI Agent</a>
+    <a class="toc-link" href="#report">📸 Báo cáo Postman</a>
+  </nav>
+  <div class="pt-4 border-t border-slate-200/50 text-[10px] text-slate-400 font-bold uppercase tracking-widest px-3">
+    Nhóm 3 thành viên · 10 Models
+  </div>
+</aside>
+
+<!-- Main -->
+<main class="md:ml-64 min-h-screen">
+
+  <!-- Top Bar -->
+  <header class="flex justify-between items-center px-8 py-4 w-full sticky top-0 bg-white/80 backdrop-blur-xl shadow-sm z-30 border-b border-slate-100">
+    <div class="flex items-center gap-4">
+      <span class="material-symbols-outlined text-primary">content_cut</span>
+      <h1 class="text-xl font-bold tracking-tight text-teal-800 font-headline">Barber Appointment Management System</h1>
+    </div>
+    <div class="flex gap-2">
+      <span class="tag tag-teal">Node.js + Express</span>
+      <span class="tag tag-blue">RESTful API</span>
+      <span class="tag tag-amber">SePay MBBank</span>
+    </div>
+  </header>
+
+  <div class="p-8 space-y-16 max-w-6xl mx-auto">
+
+    <!-- ─── 1. OVERVIEW ─── -->
+    <section id="overview">
+      <div class="section-title">📋 Tổng quan dự án</div>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div class="card flex flex-col gap-2">
+          <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Chủ đề</p>
+          <p class="font-bold text-lg text-primary font-headline">Barber Appointment<br/>Management System</p>
+          <p class="text-sm text-slate-500 mt-1">Hệ thống đặt lịch cắt tóc trực tuyến toàn diện — quản lý thợ, dịch vụ, lịch hẹn, thanh toán và tồn kho.</p>
+        </div>
+        <div class="card flex flex-col gap-2">
+          <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Stack kỹ thuật</p>
+          <div class="space-y-1 mt-1 text-sm">
+            <div class="flex items-center gap-2"><span class="material-symbols-outlined text-primary text-base">dns</span><b>BE:</b> Node.js + Express.js (RESTful)</div>
+            <div class="flex items-center gap-2"><span class="material-symbols-outlined text-primary text-base">storage</span><b>DB:</b> MongoDB (Mongoose)</div>
+            <div class="flex items-center gap-2"><span class="material-symbols-outlined text-primary text-base">web</span><b>FE:</b> React / Vue / Angular</div>
+            <div class="flex items-center gap-2"><span class="material-symbols-outlined text-primary text-base">lock</span><b>Auth:</b> JWT + Bcrypt</div>
+            <div class="flex items-center gap-2"><span class="material-symbols-outlined text-primary text-base">payments</span><b>Payment:</b> SePay MBBank</div>
+          </div>
+        </div>
+        <div class="card flex flex-col gap-2">
+          <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Yêu cầu bắt buộc</p>
+          <div class="space-y-2 mt-1">
+            <div class="flex items-center gap-2 text-sm"><span class="material-symbols-outlined text-emerald-600 text-base">check_circle</span>CRUD đầy đủ</div>
+            <div class="flex items-center gap-2 text-sm"><span class="material-symbols-outlined text-emerald-600 text-base">check_circle</span>Authentication (JWT)</div>
+            <div class="flex items-center gap-2 text-sm"><span class="material-symbols-outlined text-emerald-600 text-base">check_circle</span>Authorization (Role-based)</div>
+            <div class="flex items-center gap-2 text-sm"><span class="material-symbols-outlined text-emerald-600 text-base">check_circle</span>File Upload (Multer)</div>
+            <div class="flex items-center gap-2 text-sm"><span class="material-symbols-outlined text-emerald-600 text-base">check_circle</span>10 Models (3 members)</div>
+            <div class="flex items-center gap-2 text-sm"><span class="material-symbols-outlined text-emerald-600 text-base">check_circle</span>RESTful (không MVC)</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Roles -->
+      <div class="card">
+        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">Vai trò người dùng trong hệ thống</p>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="bg-surface-container-low rounded-xl p-4 border-l-4 border-primary">
+            <div class="font-bold text-primary mb-1">👑 Admin</div>
+            <ul class="text-sm text-slate-600 space-y-1">
+              <li>• Quản lý toàn hệ thống</li>
+              <li>• CRUD tất cả tài nguyên</li>
+              <li>• Xem báo cáo doanh thu</li>
+              <li>• Phân quyền thợ cắt</li>
+            </ul>
+          </div>
+          <div class="bg-surface-container-low rounded-xl p-4 border-l-4 border-teal-400">
+            <div class="font-bold text-teal-700 mb-1">✂️ Barber (Thợ cắt)</div>
+            <ul class="text-sm text-slate-600 space-y-1">
+              <li>• Xem & cập nhật lịch hẹn của mình</li>
+              <li>• Quản lý profile cá nhân</li>
+              <li>• Cập nhật trạng thái lịch hẹn</li>
+              <li>• Upload ảnh sản phẩm</li>
+            </ul>
+          </div>
+          <div class="bg-surface-container-low rounded-xl p-4 border-l-4 border-tertiary-container">
+            <div class="font-bold text-amber-800 mb-1">🙋 Customer (Khách hàng)</div>
+            <ul class="text-sm text-slate-600 space-y-1">
+              <li>• Đăng ký / đăng nhập</li>
+              <li>• Đặt & hủy lịch hẹn</li>
+              <li>• Thanh toán online (SePay)</li>
+              <li>• Xem lịch sử, đánh giá</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── 2. MEMBERS ─── -->
+    <section id="members">
+      <div class="section-title">👥 Phân công thành viên (3 người · 10 Models)</div>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+        <!-- Member 1 -->
+        <div class="card border-t-4 border-primary">
+          <div class="flex items-center gap-3 mb-4">
+            <div class="w-12 h-12 rounded-full bg-primary flex items-center justify-center font-extrabold text-white text-lg">M1</div>
+            <div>
+              <div class="font-bold text-on-surface">Thành viên 1</div>
+              <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Lead Developer</div>
+            </div>
+          </div>
+          <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">8 Models chính</p>
+          <div class="space-y-2">
+            <div class="flex items-center gap-2"><span class="tag tag-teal">users</span><span class="text-xs text-slate-600">Quản lý người dùng + auth</span></div>
+            <div class="flex items-center gap-2"><span class="tag tag-teal">roles</span><span class="text-xs text-slate-600">Phân quyền hệ thống</span></div>
+            <div class="flex items-center gap-2"><span class="tag tag-blue">products</span><span class="text-xs text-slate-600">Dịch vụ cắt tóc</span></div>
+            <div class="flex items-center gap-2"><span class="tag tag-blue">categories</span><span class="text-xs text-slate-600">Danh mục dịch vụ</span></div>
+            <div class="flex items-center gap-2"><span class="tag tag-amber">reservations</span><span class="text-xs text-slate-600">Lịch hẹn (core)</span></div>
+            <div class="flex items-center gap-2"><span class="tag tag-amber">payments</span><span class="text-xs text-slate-600">Thanh toán + SePay</span></div>
+            <div class="flex items-center gap-2"><span class="tag tag-coral">carts</span><span class="text-xs text-slate-600">Giỏ hàng dịch vụ</span></div>
+            <div class="flex items-center gap-2"><span class="tag tag-coral">inventories</span><span class="text-xs text-slate-600">Kho sản phẩm</span></div>
+          </div>
+        </div>
+
+        <!-- Member 2 -->
+        <div class="card border-t-4 border-teal-400">
+          <div class="flex items-center gap-3 mb-4">
+            <div class="w-12 h-12 rounded-full bg-teal-500 flex items-center justify-center font-extrabold text-white text-lg">M2</div>
+            <div>
+              <div class="font-bold text-on-surface">Thành viên 2</div>
+              <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Dev + FE</div>
+            </div>
+          </div>
+          <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">1 Model bổ sung</p>
+          <div class="space-y-2">
+            <div class="flex items-center gap-2"><span class="tag tag-purple">messages</span><span class="text-xs text-slate-600">Tin nhắn / thông báo nội bộ</span></div>
+          </div>
+          <div class="mt-4 pt-4 border-t border-slate-100">
+            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Nhiệm vụ FE</p>
+            <div class="text-xs text-slate-600 space-y-1">
+              <div>• Trang đặt lịch (Booking flow)</div>
+              <div>• Trang thanh toán SePay</div>
+              <div>• Dashboard khách hàng</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Member 3 -->
+        <div class="card border-t-4 border-tertiary-container">
+          <div class="flex items-center gap-3 mb-4">
+            <div class="w-12 h-12 rounded-full bg-amber-700 flex items-center justify-center font-extrabold text-white text-lg">M3</div>
+            <div>
+              <div class="font-bold text-on-surface">Thành viên 3</div>
+              <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Dev + Report</div>
+            </div>
+          </div>
+          <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">1 Model bổ sung</p>
+          <div class="space-y-2">
+            <div class="flex items-center gap-2"><span class="tag tag-gray">reviews</span><span class="text-xs text-slate-600">Đánh giá dịch vụ / thợ</span></div>
+          </div>
+          <div class="mt-4 pt-4 border-t border-slate-100">
+            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Nhiệm vụ FE + Báo cáo</p>
+            <div class="text-xs text-slate-600 space-y-1">
+              <div>• Trang admin dashboard</div>
+              <div>• Postman collection + docs</div>
+              <div>• Chụp ảnh test API toàn bộ</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Timeline -->
+      <div class="card mt-6">
+        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">Timeline dự kiến</p>
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div class="bg-surface-container-low rounded-xl p-4 text-center">
+            <div class="text-2xl font-extrabold text-primary font-headline">Tuần 1</div>
+            <div class="text-xs text-slate-500 mt-1">Setup project · Schema · Auth (users/roles)</div>
+          </div>
+          <div class="bg-surface-container-low rounded-xl p-4 text-center">
+            <div class="text-2xl font-extrabold text-teal-600 font-headline">Tuần 2</div>
+            <div class="text-xs text-slate-500 mt-1">CRUD: products, categories, carts, inventories</div>
+          </div>
+          <div class="bg-surface-container-low rounded-xl p-4 text-center">
+            <div class="text-2xl font-extrabold text-amber-700 font-headline">Tuần 3</div>
+            <div class="text-xs text-slate-500 mt-1">Reservations, payments (SePay), messages, reviews</div>
+          </div>
+          <div class="bg-surface-container-low rounded-xl p-4 text-center">
+            <div class="text-2xl font-extrabold text-slate-600 font-headline">Tuần 4</div>
+            <div class="text-xs text-slate-500 mt-1">FE hoàn thiện · Test · Postman · Báo cáo</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── 3. MODELS ─── -->
+    <section id="models">
+      <div class="section-title">🗃️ Phân tích 10 Model nghiệp vụ</div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+
+        <!-- users -->
+        <div class="model-card">
+          <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center gap-2">
+              <span class="material-symbols-outlined text-primary">person</span>
+              <span class="font-bold text-base font-headline">users</span>
+            </div>
+            <span class="tag tag-teal">M1 · Core</span>
+          </div>
+          <p class="text-sm text-slate-600 mb-3">Lưu thông tin tài khoản: khách hàng, thợ cắt, admin. Bao gồm xác thực và phân quyền.</p>
+          <div class="text-xs text-slate-500 space-y-0.5">
+            <div><span class="font-bold">Fields:</span> name, email, password(hash), phone, avatar, roleId, isActive, createdAt</div>
+            <div><span class="font-bold">Relations:</span> → roles (FK), → reservations, → reviews, → messages</div>
+            <div><span class="font-bold">Features:</span> bcrypt hash, JWT, upload avatar</div>
+          </div>
+        </div>
+
+        <!-- roles -->
+        <div class="model-card">
+          <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center gap-2">
+              <span class="material-symbols-outlined text-primary">admin_panel_settings</span>
+              <span class="font-bold text-base font-headline">roles</span>
+            </div>
+            <span class="tag tag-teal">M1 · Auth</span>
+          </div>
+          <p class="text-sm text-slate-600 mb-3">Phân quyền theo vai trò: admin, barber, customer. Kiểm soát quyền truy cập các endpoint.</p>
+          <div class="text-xs text-slate-500 space-y-0.5">
+            <div><span class="font-bold">Fields:</span> name (admin/barber/customer), permissions[], description</div>
+            <div><span class="font-bold">Relations:</span> ← users (1:N)</div>
+            <div><span class="font-bold">Features:</span> middleware checkRole()</div>
+          </div>
+        </div>
+
+        <!-- products (services) -->
+        <div class="model-card">
+          <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center gap-2">
+              <span class="material-symbols-outlined text-primary">content_cut</span>
+              <span class="font-bold text-base font-headline">products</span>
+            </div>
+            <span class="tag tag-blue">M1 · Service</span>
+          </div>
+          <p class="text-sm text-slate-600 mb-3">Dịch vụ cắt tóc: Classic Haircut, Beard Trim, Full Service... với giá và thời lượng.</p>
+          <div class="text-xs text-slate-500 space-y-0.5">
+            <div><span class="font-bold">Fields:</span> name, description, price, duration(min), images[], categoryId, isActive</div>
+            <div><span class="font-bold">Relations:</span> → categories (FK), ← carts, ← reservations</div>
+            <div><span class="font-bold">Features:</span> upload multiple images (Multer)</div>
+          </div>
+        </div>
+
+        <!-- categories -->
+        <div class="model-card">
+          <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center gap-2">
+              <span class="material-symbols-outlined text-primary">category</span>
+              <span class="font-bold text-base font-headline">categories</span>
+            </div>
+            <span class="tag tag-blue">M1 · Classify</span>
+          </div>
+          <p class="text-sm text-slate-600 mb-3">Nhóm dịch vụ: Cắt tóc, Gội đầu, Nhuộm, Uốn... giúp lọc và hiển thị dịch vụ.</p>
+          <div class="text-xs text-slate-500 space-y-0.5">
+            <div><span class="font-bold">Fields:</span> name, slug, description, image, parentId (nested)</div>
+            <div><span class="font-bold">Relations:</span> ← products (1:N)</div>
+            <div><span class="font-bold">Features:</span> nested categories (parent/child)</div>
+          </div>
+        </div>
+
+        <!-- reservations -->
+        <div class="model-card border-l-4 border-primary">
+          <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center gap-2">
+              <span class="material-symbols-outlined text-primary">event_note</span>
+              <span class="font-bold text-base font-headline">reservations</span>
+            </div>
+            <span class="tag tag-amber">M1 · CORE ⭐</span>
+          </div>
+          <p class="text-sm text-slate-600 mb-3">Model trung tâm: lưu lịch hẹn giữa khách hàng và thợ cắt, trạng thái, thời gian, dịch vụ đã chọn.</p>
+          <div class="text-xs text-slate-500 space-y-0.5">
+            <div><span class="font-bold">Fields:</span> customerId, barberId, serviceIds[], date, timeSlot, status(pending/confirmed/done/cancelled), totalPrice, note</div>
+            <div><span class="font-bold">Relations:</span> → users(customer), → users(barber), → products, ← payments</div>
+            <div><span class="font-bold">Features:</span> slot conflict check, status machine</div>
+          </div>
+        </div>
+
+        <!-- payments -->
+        <div class="model-card border-l-4 border-amber-400">
+          <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center gap-2">
+              <span class="material-symbols-outlined text-primary">payments</span>
+              <span class="font-bold text-base font-headline">payments</span>
+            </div>
+            <span class="tag tag-amber">M1 · SePay 💳</span>
+          </div>
+          <p class="text-sm text-slate-600 mb-3">Lịch sử giao dịch: tích hợp SePay MBBank QR, theo dõi trạng thái thanh toán realtime.</p>
+          <div class="text-xs text-slate-500 space-y-0.5">
+            <div><span class="font-bold">Fields:</span> reservationId, amount, method(cash/transfer/qr), status(pending/paid/failed/refunded), transactionId, qrCode, paidAt</div>
+            <div><span class="font-bold">Relations:</span> → reservations (1:1)</div>
+            <div><span class="font-bold">Features:</span> SePay webhook, QR generation</div>
+          </div>
+        </div>
+
+        <!-- carts -->
+        <div class="model-card">
+          <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center gap-2">
+              <span class="material-symbols-outlined text-primary">shopping_cart</span>
+              <span class="font-bold text-base font-headline">carts</span>
+            </div>
+            <span class="tag tag-coral">M1 · UX</span>
+          </div>
+          <p class="text-sm text-slate-600 mb-3">Giỏ hàng tạm: khách chọn nhiều dịch vụ trước khi đặt lịch chính thức.</p>
+          <div class="text-xs text-slate-500 space-y-0.5">
+            <div><span class="font-bold">Fields:</span> userId, items[{productId, quantity, price}], totalAmount, updatedAt</div>
+            <div><span class="font-bold">Relations:</span> → users (1:1), → products</div>
+            <div><span class="font-bold">Features:</span> merge cart khi login, tự xóa sau checkout</div>
+          </div>
+        </div>
+
+        <!-- inventories -->
+        <div class="model-card">
+          <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center gap-2">
+              <span class="material-symbols-outlined text-primary">inventory_2</span>
+              <span class="font-bold text-base font-headline">inventories</span>
+            </div>
+            <span class="tag tag-coral">M1 · Stock</span>
+          </div>
+          <p class="text-sm text-slate-600 mb-3">Quản lý kho: dầu gội, sáp tóc, dao cạo... theo dõi tồn kho và cảnh báo khi hết hàng.</p>
+          <div class="text-xs text-slate-500 space-y-0.5">
+            <div><span class="font-bold">Fields:</span> name, sku, quantity, unit, minStock, supplier, purchasePrice, images[]</div>
+            <div><span class="font-bold">Relations:</span> standalone (admin manages)</div>
+            <div><span class="font-bold">Features:</span> upload ảnh sản phẩm kho</div>
+          </div>
+        </div>
+
+        <!-- messages -->
+        <div class="model-card">
+          <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center gap-2">
+              <span class="material-symbols-outlined text-primary">message</span>
+              <span class="font-bold text-base font-headline">messages</span>
+            </div>
+            <span class="tag tag-purple">M2 · Notify</span>
+          </div>
+          <p class="text-sm text-slate-600 mb-3">Thông báo nội bộ và tin nhắn giữa khách hàng — admin/barber (xác nhận lịch, nhắc lịch).</p>
+          <div class="text-xs text-slate-500 space-y-0.5">
+            <div><span class="font-bold">Fields:</span> senderId, receiverId, content, type(notification/chat), isRead, reservationId, createdAt</div>
+            <div><span class="font-bold">Relations:</span> → users (sender/receiver), → reservations</div>
+            <div><span class="font-bold">Features:</span> mark as read, filter by type</div>
+          </div>
+        </div>
+
+        <!-- reviews -->
+        <div class="model-card">
+          <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center gap-2">
+              <span class="material-symbols-outlined text-primary">star</span>
+              <span class="font-bold text-base font-headline">reviews</span>
+            </div>
+            <span class="tag tag-gray">M3 · Rating</span>
+          </div>
+          <p class="text-sm text-slate-600 mb-3">Đánh giá dịch vụ và thợ cắt sau khi hoàn thành lịch hẹn. Giúp xây dựng uy tín cửa hàng.</p>
+          <div class="text-xs text-slate-500 space-y-0.5">
+            <div><span class="font-bold">Fields:</span> customerId, barberId, productId, reservationId, rating(1-5), comment, images[], createdAt</div>
+            <div><span class="font-bold">Relations:</span> → users, → products, → reservations (1:1)</div>
+            <div><span class="font-bold">Features:</span> chỉ review sau khi lịch done, upload ảnh</div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ─── 4. FLOWS ─── -->
+    <section id="flows">
+      <div class="section-title">🔄 Luồng hoạt động chính</div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+        <!-- Booking flow -->
+        <div class="card">
+          <div class="flex items-center gap-2 mb-4">
+            <span class="material-symbols-outlined text-primary">event_available</span>
+            <span class="font-bold font-headline text-base">Luồng đặt lịch hẹn</span>
+          </div>
+          <div>
+            <div class="flow-step"><div class="step-num">1</div><div><div class="font-semibold text-sm">Khách hàng đăng nhập</div><div class="text-xs text-slate-500">POST /api/auth/login → nhận JWT token</div></div></div>
+            <div class="flow-step"><div class="step-num">2</div><div><div class="font-semibold text-sm">Xem danh sách dịch vụ</div><div class="text-xs text-slate-500">GET /api/products?categoryId=... → lọc theo danh mục</div></div></div>
+            <div class="flow-step"><div class="step-num">3</div><div><div class="font-semibold text-sm">Chọn thợ & khung giờ</div><div class="text-xs text-slate-500">GET /api/users?role=barber · GET /api/reservations/slots</div></div></div>
+            <div class="flow-step"><div class="step-num">4</div><div><div class="font-semibold text-sm">Tạo lịch hẹn</div><div class="text-xs text-slate-500">POST /api/reservations → status: "pending"</div></div></div>
+            <div class="flow-step"><div class="step-num">5</div><div><div class="font-semibold text-sm">Thanh toán SePay</div><div class="text-xs text-slate-500">POST /api/payments/create → nhận QR code MBBank</div></div></div>
+            <div class="flow-step"><div class="step-num">6</div><div><div class="font-semibold text-sm">Webhook xác nhận</div><div class="text-xs text-slate-500">SePay gọi POST /api/payments/webhook → cập nhật paid</div></div></div>
+            <div class="flow-step"><div class="step-num">7</div><div><div class="font-semibold text-sm">Gửi thông báo</div><div class="text-xs text-slate-500">Tạo message cho khách + barber, reservation → confirmed</div></div></div>
+          </div>
+        </div>
+
+        <!-- Auth flow -->
+        <div class="card">
+          <div class="flex items-center gap-2 mb-4">
+            <span class="material-symbols-outlined text-primary">lock</span>
+            <span class="font-bold font-headline text-base">Luồng Authen & Author</span>
+          </div>
+          <div>
+            <div class="flow-step"><div class="step-num">1</div><div><div class="font-semibold text-sm">Đăng ký tài khoản</div><div class="text-xs text-slate-500">POST /api/auth/register → bcrypt hash password, gán role customer</div></div></div>
+            <div class="flow-step"><div class="step-num">2</div><div><div class="font-semibold text-sm">Đăng nhập</div><div class="text-xs text-slate-500">POST /api/auth/login → verify password → trả JWT (24h)</div></div></div>
+            <div class="flow-step"><div class="step-num">3</div><div><div class="font-semibold text-sm">Middleware xác thực</div><div class="text-xs text-slate-500">authHandler.js → verify JWT từ Authorization header</div></div></div>
+            <div class="flow-step"><div class="step-num">4</div><div><div class="font-semibold text-sm">Kiểm tra quyền</div><div class="text-xs text-slate-500">checkRole(['admin']) hoặc checkRole(['barber','admin'])</div></div></div>
+            <div class="flow-step"><div class="step-num">5</div><div><div class="font-semibold text-sm">Upload ảnh</div><div class="text-xs text-slate-500">uploadHandler.js (Multer) → lưu vào /uploads, trả URL</div></div></div>
+            <div class="flow-step"><div class="step-num">6</div><div><div class="font-semibold text-sm">Refresh token</div><div class="text-xs text-slate-500">POST /api/auth/refresh-token → cấp lại JWT mới</div></div></div>
+            <div class="flow-step"><div class="step-num">7</div><div><div class="font-semibold text-sm">Đăng xuất</div><div class="text-xs text-slate-500">POST /api/auth/logout → blacklist token (nếu có Redis)</div></div></div>
+          </div>
+        </div>
+
+        <!-- Barber workflow -->
+        <div class="card">
+          <div class="flex items-center gap-2 mb-4">
+            <span class="material-symbols-outlined text-primary">content_cut</span>
+            <span class="font-bold font-headline text-base">Luồng quản lý của Barber</span>
+          </div>
+          <div>
+            <div class="flow-step"><div class="step-num">1</div><div><div class="font-semibold text-sm">Barber đăng nhập</div><div class="text-xs text-slate-500">Nhận JWT với role = "barber"</div></div></div>
+            <div class="flow-step"><div class="step-num">2</div><div><div class="font-semibold text-sm">Xem lịch hẹn của mình</div><div class="text-xs text-slate-500">GET /api/reservations?barberId={id} → lọc theo ngày</div></div></div>
+            <div class="flow-step"><div class="step-num">3</div><div><div class="font-semibold text-sm">Xác nhận / từ chối</div><div class="text-xs text-slate-500">PATCH /api/reservations/:id → status: confirmed / cancelled</div></div></div>
+            <div class="flow-step"><div class="step-num">4</div><div><div class="font-semibold text-sm">Hoàn thành dịch vụ</div><div class="text-xs text-slate-500">PATCH → status: done → trigger cho phép review</div></div></div>
+            <div class="flow-step"><div class="step-num">5</div><div><div class="font-semibold text-sm">Cập nhật profile</div><div class="text-xs text-slate-500">PUT /api/users/:id → upload avatar, cập nhật bio</div></div></div>
+          </div>
+        </div>
+
+        <!-- Admin workflow -->
+        <div class="card">
+          <div class="flex items-center gap-2 mb-4">
+            <span class="material-symbols-outlined text-primary">admin_panel_settings</span>
+            <span class="font-bold font-headline text-base">Luồng quản trị Admin</span>
+          </div>
+          <div>
+            <div class="flow-step"><div class="step-num">1</div><div><div class="font-semibold text-sm">Quản lý danh mục & dịch vụ</div><div class="text-xs text-slate-500">CRUD /api/categories · /api/products (upload ảnh)</div></div></div>
+            <div class="flow-step"><div class="step-num">2</div><div><div class="font-semibold text-sm">Quản lý nhân sự</div><div class="text-xs text-slate-500">CRUD /api/users · gán role barber cho nhân viên</div></div></div>
+            <div class="flow-step"><div class="step-num">3</div><div><div class="font-semibold text-sm">Theo dõi tồn kho</div><div class="text-xs text-slate-500">CRUD /api/inventories · cảnh báo khi &lt; minStock</div></div></div>
+            <div class="flow-step"><div class="step-num">4</div><div><div class="font-semibold text-sm">Xem báo cáo doanh thu</div><div class="text-xs text-slate-500">GET /api/payments/report?period=month · thống kê theo thợ</div></div></div>
+            <div class="flow-step"><div class="step-num">5</div><div><div class="font-semibold text-sm">Quản lý đánh giá</div><div class="text-xs text-slate-500">GET/DELETE /api/reviews · ẩn review vi phạm</div></div></div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ─── 5. DATABASE ─── -->
+    <section id="database">
+      <div class="section-title">🗄️ Thiết kế Cơ sở dữ liệu (MongoDB)</div>
+
+      <!-- users -->
+      <div class="card mb-5">
+        <div class="flex items-center gap-2 mb-3">
+          <span class="tag tag-teal">Collection: users</span>
+          <span class="text-xs text-slate-500">→ Xác thực, phân quyền, profile</span>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="db-table">
+            <thead><tr><th>Field</th><th>Type</th><th>Key</th><th>Mô tả</th></tr></thead>
+            <tbody>
+              <tr><td>_id</td><td>ObjectId</td><td><span class="badge-pk">PK</span></td><td>MongoDB auto-generate</td></tr>
+              <tr><td>name</td><td>String</td><td></td><td>Họ tên đầy đủ, required</td></tr>
+              <tr><td>email</td><td>String</td><td><span class="badge-idx">UNIQUE</span></td><td>Email đăng nhập, lowercase</td></tr>
+              <tr><td>password</td><td>String</td><td></td><td>Bcrypt hash, min 6 chars</td></tr>
+              <tr><td>phone</td><td>String</td><td></td><td>Số điện thoại VN</td></tr>
+              <tr><td>avatar</td><td>String</td><td></td><td>URL ảnh đại diện (Multer)</td></tr>
+              <tr><td>roleId</td><td>ObjectId</td><td><span class="badge-fk">FK</span> → roles</td><td>Phân quyền người dùng</td></tr>
+              <tr><td>isActive</td><td>Boolean</td><td></td><td>Tài khoản còn hoạt động</td></tr>
+              <tr><td>bio</td><td>String</td><td></td><td>Mô tả (dành cho barber)</td></tr>
+              <tr><td>createdAt / updatedAt</td><td>Date</td><td></td><td>Timestamps (auto)</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- reservations -->
+      <div class="card mb-5">
+        <div class="flex items-center gap-2 mb-3">
+          <span class="tag tag-amber">Collection: reservations</span>
+          <span class="text-xs text-slate-500">→ Lịch hẹn core của hệ thống</span>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="db-table">
+            <thead><tr><th>Field</th><th>Type</th><th>Key</th><th>Mô tả</th></tr></thead>
+            <tbody>
+              <tr><td>_id</td><td>ObjectId</td><td><span class="badge-pk">PK</span></td><td></td></tr>
+              <tr><td>customerId</td><td>ObjectId</td><td><span class="badge-fk">FK</span> → users</td><td>Khách đặt lịch</td></tr>
+              <tr><td>barberId</td><td>ObjectId</td><td><span class="badge-fk">FK</span> → users</td><td>Thợ cắt được chọn</td></tr>
+              <tr><td>services</td><td>[ObjectId]</td><td><span class="badge-fk">FK</span> → products</td><td>Danh sách dịch vụ</td></tr>
+              <tr><td>date</td><td>Date</td><td><span class="badge-idx">IDX</span></td><td>Ngày hẹn</td></tr>
+              <tr><td>timeSlot</td><td>String</td><td></td><td>"09:00-09:45", 45 phút/slot</td></tr>
+              <tr><td>status</td><td>String</td><td><span class="badge-idx">IDX</span></td><td>pending / confirmed / done / cancelled</td></tr>
+              <tr><td>totalPrice</td><td>Number</td><td></td><td>Tổng tiền dịch vụ (VND)</td></tr>
+              <tr><td>note</td><td>String</td><td></td><td>Ghi chú từ khách hàng</td></tr>
+              <tr><td>createdAt</td><td>Date</td><td></td><td></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- payments -->
+      <div class="card mb-5">
+        <div class="flex items-center gap-2 mb-3">
+          <span class="tag tag-amber">Collection: payments</span>
+          <span class="text-xs text-slate-500">→ Giao dịch & SePay webhook</span>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="db-table">
+            <thead><tr><th>Field</th><th>Type</th><th>Key</th><th>Mô tả</th></tr></thead>
+            <tbody>
+              <tr><td>_id</td><td>ObjectId</td><td><span class="badge-pk">PK</span></td><td></td></tr>
+              <tr><td>reservationId</td><td>ObjectId</td><td><span class="badge-fk">FK</span> → reservations</td><td>Liên kết lịch hẹn (1:1)</td></tr>
+              <tr><td>amount</td><td>Number</td><td></td><td>Số tiền VND</td></tr>
+              <tr><td>method</td><td>String</td><td></td><td>cash / transfer / qr_code</td></tr>
+              <tr><td>status</td><td>String</td><td><span class="badge-idx">IDX</span></td><td>pending / paid / failed / refunded</td></tr>
+              <tr><td>transactionId</td><td>String</td><td><span class="badge-idx">UNIQUE</span></td><td>Mã giao dịch từ SePay</td></tr>
+              <tr><td>qrCodeUrl</td><td>String</td><td></td><td>URL ảnh QR MBBank</td></tr>
+              <tr><td>paidAt</td><td>Date</td><td></td><td>Thời điểm thanh toán thành công</td></tr>
+              <tr><td>webhookData</td><td>Object</td><td></td><td>Raw payload từ SePay</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Relationship diagram description -->
+      <div class="card bg-surface-container-low border-primary/20">
+        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Quan hệ giữa các Collection</p>
+        <div class="text-sm text-slate-700 space-y-1 font-mono">
+          <div>roles (1) ──────── (N) users</div>
+          <div>users[customer] (1) ─── (N) reservations</div>
+          <div>users[barber] (1) ──── (N) reservations</div>
+          <div>reservations (1) ────── (1) payments</div>
+          <div>products (N) ────────── (N) reservations [embed array]</div>
+          <div>categories (1) ─────── (N) products</div>
+          <div>users (1) ───────────── (1) carts</div>
+          <div>users (1) ───────────── (N) reviews</div>
+          <div>reservations (1) ─────── (1) reviews</div>
+          <div>users (N) ───────────── (N) messages</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── 6. API ─── -->
+    <section id="api">
+      <div class="section-title">📡 Danh sách API Endpoints</div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+
+        <!-- Auth -->
+        <div class="card">
+          <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">🔐 Authentication</p>
+          <div class="endpoint-row"><span class="method post">POST</span><span class="font-mono text-xs">/api/auth/register</span></div>
+          <div class="endpoint-row"><span class="method post">POST</span><span class="font-mono text-xs">/api/auth/login</span></div>
+          <div class="endpoint-row"><span class="method post">POST</span><span class="font-mono text-xs">/api/auth/refresh-token</span></div>
+          <div class="endpoint-row"><span class="method post">POST</span><span class="font-mono text-xs">/api/auth/logout</span></div>
+          <div class="endpoint-row"><span class="method get">GET</span><span class="font-mono text-xs">/api/auth/me</span><span class="text-xs text-slate-400 ml-1">🔒 auth</span></div>
+        </div>
+
+        <!-- Users -->
+        <div class="card">
+          <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">👤 Users</p>
+          <div class="endpoint-row"><span class="method get">GET</span><span class="font-mono text-xs">/api/users</span><span class="text-xs text-slate-400 ml-1">🔒 admin</span></div>
+          <div class="endpoint-row"><span class="method get">GET</span><span class="font-mono text-xs">/api/users/:id</span><span class="text-xs text-slate-400 ml-1">🔒 auth</span></div>
+          <div class="endpoint-row"><span class="method put">PUT</span><span class="font-mono text-xs">/api/users/:id</span><span class="text-xs text-slate-400 ml-1">🔒 owner/admin</span></div>
+          <div class="endpoint-row"><span class="method delete">DEL</span><span class="font-mono text-xs">/api/users/:id</span><span class="text-xs text-slate-400 ml-1">🔒 admin</span></div>
+          <div class="endpoint-row"><span class="method post">POST</span><span class="font-mono text-xs">/api/users/:id/avatar</span><span class="text-xs text-slate-400 ml-1">📸 upload</span></div>
+        </div>
+
+        <!-- Reservations -->
+        <div class="card">
+          <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">📅 Reservations</p>
+          <div class="endpoint-row"><span class="method get">GET</span><span class="font-mono text-xs">/api/reservations</span><span class="text-xs text-slate-400 ml-1">🔒 auth (filter)</span></div>
+          <div class="endpoint-row"><span class="method get">GET</span><span class="font-mono text-xs">/api/reservations/:id</span></div>
+          <div class="endpoint-row"><span class="method get">GET</span><span class="font-mono text-xs">/api/reservations/slots</span><span class="text-xs text-slate-400 ml-1">free slots</span></div>
+          <div class="endpoint-row"><span class="method post">POST</span><span class="font-mono text-xs">/api/reservations</span><span class="text-xs text-slate-400 ml-1">🔒 customer</span></div>
+          <div class="endpoint-row"><span class="method patch">PATCH</span><span class="font-mono text-xs">/api/reservations/:id/status</span><span class="text-xs text-slate-400 ml-1">🔒 barber/admin</span></div>
+          <div class="endpoint-row"><span class="method delete">DEL</span><span class="font-mono text-xs">/api/reservations/:id</span><span class="text-xs text-slate-400 ml-1">🔒 admin</span></div>
+        </div>
+
+        <!-- Payments -->
+        <div class="card">
+          <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">💳 Payments (SePay)</p>
+          <div class="endpoint-row"><span class="method post">POST</span><span class="font-mono text-xs">/api/payments/create</span><span class="text-xs text-slate-400 ml-1">→ QR</span></div>
+          <div class="endpoint-row"><span class="method get">GET</span><span class="font-mono text-xs">/api/payments/:id</span></div>
+          <div class="endpoint-row"><span class="method post">POST</span><span class="font-mono text-xs">/api/payments/webhook</span><span class="text-xs text-slate-400 ml-1">🔔 SePay CB</span></div>
+          <div class="endpoint-row"><span class="method get">GET</span><span class="font-mono text-xs">/api/payments/report</span><span class="text-xs text-slate-400 ml-1">🔒 admin</span></div>
+          <div class="endpoint-row"><span class="method patch">PATCH</span><span class="font-mono text-xs">/api/payments/:id/refund</span><span class="text-xs text-slate-400 ml-1">🔒 admin</span></div>
+        </div>
+
+        <!-- Products -->
+        <div class="card">
+          <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">✂️ Products (Services)</p>
+          <div class="endpoint-row"><span class="method get">GET</span><span class="font-mono text-xs">/api/products</span><span class="text-xs text-slate-400 ml-1">public</span></div>
+          <div class="endpoint-row"><span class="method get">GET</span><span class="font-mono text-xs">/api/products/:id</span></div>
+          <div class="endpoint-row"><span class="method post">POST</span><span class="font-mono text-xs">/api/products</span><span class="text-xs text-slate-400 ml-1">🔒 admin + 📸</span></div>
+          <div class="endpoint-row"><span class="method put">PUT</span><span class="font-mono text-xs">/api/products/:id</span><span class="text-xs text-slate-400 ml-1">🔒 admin</span></div>
+          <div class="endpoint-row"><span class="method delete">DEL</span><span class="font-mono text-xs">/api/products/:id</span><span class="text-xs text-slate-400 ml-1">🔒 admin</span></div>
+        </div>
+
+        <!-- Reviews + Messages -->
+        <div class="card">
+          <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">⭐ Reviews &amp; 💬 Messages</p>
+          <div class="endpoint-row"><span class="method get">GET</span><span class="font-mono text-xs">/api/reviews?productId=</span></div>
+          <div class="endpoint-row"><span class="method post">POST</span><span class="font-mono text-xs">/api/reviews</span><span class="text-xs text-slate-400 ml-1">🔒 customer + 📸</span></div>
+          <div class="endpoint-row"><span class="method delete">DEL</span><span class="font-mono text-xs">/api/reviews/:id</span><span class="text-xs text-slate-400 ml-1">🔒 admin</span></div>
+          <div class="endpoint-row"><span class="method get">GET</span><span class="font-mono text-xs">/api/messages</span><span class="text-xs text-slate-400 ml-1">🔒 auth</span></div>
+          <div class="endpoint-row"><span class="method post">POST</span><span class="font-mono text-xs">/api/messages</span><span class="text-xs text-slate-400 ml-1">🔒 auth</span></div>
+          <div class="endpoint-row"><span class="method patch">PATCH</span><span class="font-mono text-xs">/api/messages/:id/read</span></div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ─── 7. PAYMENT ─── -->
+    <section id="payment">
+      <div class="section-title">💳 Tích hợp SePay MBBank</div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="card">
+          <p class="font-bold font-headline mb-4 text-base">Luồng thanh toán QR Code</p>
+          <div class="space-y-3">
+            <div class="bg-surface-container-low rounded-xl p-3">
+              <div class="text-xs font-bold text-primary mb-1">Bước 1: Tạo đơn thanh toán</div>
+              <div class="text-xs text-slate-600">Client gọi POST /api/payments/create với reservationId. Server tạo payment record, gọi SePay API tạo QR.</div>
+            </div>
+            <div class="bg-surface-container-low rounded-xl p-3">
+              <div class="text-xs font-bold text-primary mb-1">Bước 2: Hiển thị QR MBBank</div>
+              <div class="text-xs text-slate-600">Server trả về qrCodeUrl + amount + transactionId. FE hiển thị QR, polling mỗi 3 giây kiểm tra status.</div>
+            </div>
+            <div class="bg-surface-container-low rounded-xl p-3">
+              <div class="text-xs font-bold text-primary mb-1">Bước 3: Webhook callback</div>
+              <div class="text-xs text-slate-600">SePay gọi POST /api/payments/webhook sau khi khách quét QR. Server verify signature, update status = "paid", reservation = "confirmed".</div>
+            </div>
+            <div class="bg-surface-container-low rounded-xl p-3">
+              <div class="text-xs font-bold text-primary mb-1">Bước 4: Xác nhận & thông báo</div>
+              <div class="text-xs text-slate-600">Tạo message thông báo cho khách + barber. FE polling nhận được status "paid" → redirect trang thành công.</div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <p class="font-bold font-headline mb-4 text-base">Code tham khảo: SePay Webhook</p>
+          <div class="prompt-box text-xs">
+<span class="comment">// routes/payments.js</span>
+router.post(<span class="string">'/webhook'</span>, async (req, res) => {
+  <span class="keyword">const</span> { transferAmount, transactionID,
+         content } = req.body;
+
+  <span class="comment">// 1. Xác minh chữ ký SePay</span>
+  <span class="keyword">const</span> sig = req.headers[<span class="string">'x-sepay-signature'</span>];
+  <span class="keyword">if</span> (!verifySig(sig, req.body)) {
+    <span class="keyword">return</span> res.status(401).json({err:<span class="string">'Invalid sig'</span>});
+  }
+
+  <span class="comment">// 2. Tìm payment theo transactionID</span>
+  <span class="keyword">const</span> payment = await Payment.findOne(
+    { transactionId: transactionID }
+  );
+
+  <span class="comment">// 3. Cập nhật trạng thái</span>
+  payment.status = <span class="string">'paid'</span>;
+  payment.paidAt = <span class="keyword">new</span> Date();
+  await payment.save();
+
+  <span class="comment">// 4. Cập nhật reservation</span>
+  await Reservation.findByIdAndUpdate(
+    payment.reservationId,
+    { status: <span class="string">'confirmed'</span> }
+  );
+
+  res.json({ success: <span class="keyword">true</span> });
+});
+          </div>
+          <div class="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-800">
+            ⚠️ <b>Lưu ý:</b> Cần cấu hình ngrok (development) hoặc domain thật để SePay gọi được webhook. Lưu SEPAY_API_KEY và ACCOUNT_NUMBER vào .env
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── 8. FOLDER ─── -->
+    <section id="folder">
+      <div class="section-title">📁 Cấu trúc Folder/File dự án</div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="card">
+          <p class="font-bold font-headline mb-3 text-base">Backend (Node.js + Express)</p>
+          <div class="prompt-box text-xs leading-6">
+<span class="keyword">NNPTUD-S3/</span>
+├── <span class="string">bin/</span>               <span class="comment"># www server entry</span>
+├── <span class="string">controllers/</span>       <span class="comment"># ⚠️ KHÔNG dùng (MVC = 0đ)</span>
+├── <span class="string">routes/</span>            <span class="comment"># Express Router files</span>
+│   ├── auth.js
+│   ├── users.js
+│   ├── products.js
+│   ├── categories.js
+│   ├── reservations.js
+│   ├── payments.js
+│   ├── carts.js
+│   ├── inventories.js
+│   ├── messages.js
+│   └── reviews.js
+├── <span class="string">schemas/</span>           <span class="comment"># Mongoose models</span>
+│   ├── users.js
+│   ├── roles.js
+│   ├── products.js
+│   ├── categories.js
+│   ├── reservations.js
+│   ├── payments.js
+│   ├── carts.js
+│   ├── inventories.js
+│   ├── messages.js
+│   └── reviews.js  ← <span class="string">M3 thêm</span>
+├── <span class="string">utils/</span>
+│   ├── authHandler.js    <span class="comment"># JWT middleware</span>
+│   ├── IDHandler.js      <span class="comment"># ObjectId validate</span>
+│   ├── uploadHandler.js  <span class="comment"># Multer config</span>
+│   ├── mailHandler.js    <span class="comment"># Nodemailer</span>
+│   ├── validatorHandler.js
+│   └── data.js           <span class="comment"># DB connection</span>
+├── <span class="string">uploads/</span>           <span class="comment"># Static files (gitignore)</span>
+├── <span class="string">public/</span>
+├── <span class="string">views/</span>             <span class="comment"># EJS (chỉ error pages)</span>
+├── .env
+├── .gitignore
+├── app.js             <span class="comment"># Express app config</span>
+└── package.json
+          </div>
+        </div>
+        <div class="card">
+          <p class="font-bold font-headline mb-3 text-base">Cách viết Route đúng chuẩn (không MVC)</p>
+          <div class="prompt-box text-xs leading-6">
+<span class="comment">// routes/reservations.js</span>
+<span class="keyword">const</span> express = require(<span class="string">'express'</span>);
+<span class="keyword">const</span> router = express.Router();
+<span class="keyword">const</span> Reservation = require(
+  <span class="string">'../schemas/reservations'</span>);
+<span class="keyword">const</span> { verifyToken, checkRole } =
+  require(<span class="string">'../utils/authHandler'</span>);
+
+<span class="comment">// GET all - có filter & pagination</span>
+router.get(<span class="string">'/'</span>, verifyToken, async (req, res) => {
+  <span class="keyword">try</span> {
+    <span class="keyword">const</span> { status, barberId, date } = req.query;
+    <span class="keyword">const</span> filter = {};
+    <span class="keyword">if</span> (status) filter.status = status;
+    <span class="keyword">if</span> (barberId) filter.barberId = barberId;
+    <span class="keyword">const</span> data = await Reservation
+      .find(filter)
+      .populate(<span class="string">'customerId barberId services'</span>)
+      .sort({ date: -1 });
+    res.json({ success: <span class="keyword">true</span>, data });
+  } <span class="keyword">catch</span>(e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+<span class="comment">// POST create - chỉ customer</span>
+router.post(<span class="string">'/'</span>,
+  verifyToken,
+  checkRole([<span class="string">'customer'</span>]),
+  async (req, res) => { <span class="comment">/* logic */</span> }
+);
+
+module.exports = router;
+          </div>
+          <div class="mt-3 p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-xs text-emerald-800">
+            ✅ <b>Đúng chuẩn RESTful:</b> Logic nằm thẳng trong route, không tách controller. Dùng async/await, try/catch, populate.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── 9. PROMPTS ─── -->
+    <section id="prompts">
+      <div class="section-title">🤖 Prompt AI Agent (Tiếng Việt)</div>
+      <p class="text-sm text-slate-600 mb-6">Sử dụng các prompt sau để giao cho AI (ChatGPT / Claude / Copilot) generate code cho từng phần của dự án. Copy nguyên văn, thay các placeholder trong <code class="bg-slate-100 px-1 rounded text-xs">[...]</code>.</p>
+
+      <div class="space-y-6">
+
+        <!-- Prompt 1: Schema -->
+        <div class="card">
+          <div class="flex items-center gap-2 mb-3">
+            <span class="tag tag-teal">Prompt 1</span>
+            <span class="font-bold">Tạo Mongoose Schema cho tất cả models</span>
+          </div>
+          <div class="prompt-box">
+Bạn là một Node.js senior developer. Hãy viết các Mongoose Schema cho hệ thống Barber Appointment Management System với các yêu cầu sau:
+
+**Danh sách schemas cần tạo** (mỗi file riêng trong thư mục /schemas/):
+1. users.js — fields: name, email, password(hash), phone, avatar(String), roleId(ref:'roles'), isActive(Boolean, default:true), bio, timestamps
+2. roles.js — fields: name(enum:['admin','barber','customer']), permissions([String]), description
+3. products.js — fields: name, description, price(Number), duration(Number, minutes), images([String]), categoryId(ref:'categories'), isActive, timestamps
+4. categories.js — fields: name, slug(unique), description, image(String), parentId(ref:'categories', nullable)
+5. reservations.js — fields: customerId(ref:'users'), barberId(ref:'users'), services([ref:'products']), date(Date), timeSlot(String), status(enum:['pending','confirmed','done','cancelled'], default:'pending'), totalPrice(Number), note(String), timestamps
+6. payments.js — fields: reservationId(ref:'reservations', unique), amount(Number), method(enum:['cash','transfer','qr_code']), status(enum:['pending','paid','failed','refunded'], default:'pending'), transactionId(String,unique,sparse), qrCodeUrl(String), paidAt(Date), webhookData(Mixed), timestamps
+7. carts.js — fields: userId(ref:'users', unique), items([{productId:ref:'products', quantity:Number, price:Number}]), totalAmount(Number), timestamps
+8. inventories.js — fields: name, sku(unique), quantity(Number), unit(String), minStock(Number, default:5), supplier(String), purchasePrice(Number), images([String]), timestamps
+9. messages.js — fields: senderId(ref:'users'), receiverId(ref:'users'), content(String, required), type(enum:['notification','chat']), isRead(Boolean, default:false), reservationId(ref:'reservations', nullable), timestamps
+10. reviews.js — fields: customerId(ref:'users'), barberId(ref:'users'), productId(ref:'products'), reservationId(ref:'reservations', unique), rating(Number, min:1, max:5), comment(String), images([String]), timestamps
+
+**Yêu cầu kỹ thuật:**
+- Dùng mongoose.Schema với timestamps:true
+- Thêm validation (required, min, max, enum) đầy đủ
+- Thêm index cho các field thường query (status, date, userId...)
+- Export model bằng: module.exports = mongoose.model('ModelName', schema)
+- Không dùng TypeScript
+
+Hãy viết đầy đủ code cho tất cả 10 file.
+          </div>
+        </div>
+
+        <!-- Prompt 2: Auth -->
+        <div class="card">
+          <div class="flex items-center gap-2 mb-3">
+            <span class="tag tag-blue">Prompt 2</span>
+            <span class="font-bold">Tạo utils/authHandler.js — JWT Middleware</span>
+          </div>
+          <div class="prompt-box">
+Hãy viết file utils/authHandler.js cho project Node.js + Express với các yêu cầu:
+
+**Chức năng cần có:**
+1. generateToken(userId, roleId) — tạo JWT token (payload: userId, roleId, exp: 24h)
+2. verifyToken middleware — đọc token từ header "Authorization: Bearer {token}", verify, gắn req.user
+3. checkRole(allowedRoles[]) middleware — kiểm tra req.user.role có trong allowedRoles không, nếu không trả 403
+4. hashPassword(password) — bcrypt hash với saltRounds=10
+5. comparePassword(plain, hash) — bcrypt compare, trả boolean
+
+**Dependencies:** jsonwebtoken, bcryptjs
+**Config:** JWT_SECRET từ process.env.JWT_SECRET
+**Error handling:** Trả JSON { success: false, message: "..." } với status code phù hợp (401, 403)
+
+Viết đầy đủ code với comments giải thích tiếng Việt.
+          </div>
+        </div>
+
+        <!-- Prompt 3: Reservation Route -->
+        <div class="card">
+          <div class="flex items-center gap-2 mb-3">
+            <span class="tag tag-amber">Prompt 3</span>
+            <span class="font-bold">Tạo routes/reservations.js — Route chính</span>
+          </div>
+          <div class="prompt-box">
+Hãy viết file routes/reservations.js cho Barber Appointment Management System.
+
+**QUAN TRỌNG:** Viết theo chuẩn RESTful, KHÔNG dùng pattern MVC (không tách controller). Logic xử lý nằm thẳng trong route handler.
+
+**Các endpoint cần implement:**
+
+GET /api/reservations
+- Yêu cầu: verifyToken
+- Query params: status, barberId, customerId, date, page(default:1), limit(default:10)
+- Logic: filter theo query, populate customerId(name,phone), barberId(name), services(name,price), phân trang
+- Customer chỉ xem được của mình, barber chỉ xem của mình, admin xem tất cả
+
+GET /api/reservations/slots?barberId=&date=
+- Public endpoint
+- Logic: lấy tất cả reservations của barber trong ngày, trả về các slot đã bận (08:00-17:00, mỗi slot 45 phút)
+
+GET /api/reservations/:id
+- verifyToken, trả detail đầy đủ
+
+POST /api/reservations
+- Yêu cầu: verifyToken, checkRole(['customer'])
+- Body: barberId, services[], date, timeSlot, note
+- Validate: kiểm tra slot có trống không, tính totalPrice từ products.price, tạo payment record với status pending
+
+PATCH /api/reservations/:id/status
+- Yêu cầu: verifyToken, checkRole(['barber','admin'])
+- Body: status (confirmed/done/cancelled)
+- Logic: barber chỉ cập nhật được của mình; khi status=done tự động cho phép tạo review
+
+DELETE /api/reservations/:id
+- Yêu cầu: verifyToken, checkRole(['admin'])
+
+**Dependencies cần import:**
+- ../schemas/reservations, ../schemas/products, ../schemas/payments
+- ../utils/authHandler (verifyToken, checkRole)
+- ../utils/IDHandler (validateObjectId)
+
+Viết đầy đủ code với error handling đầy đủ và comments tiếng Việt.
+          </div>
+        </div>
+
+        <!-- Prompt 4: SePay Payment -->
+        <div class="card">
+          <div class="flex items-center gap-2 mb-3">
+            <span class="tag tag-coral">Prompt 4</span>
+            <span class="font-bold">Tạo routes/payments.js — Tích hợp SePay MBBank</span>
+          </div>
+          <div class="prompt-box">
+Hãy viết file routes/payments.js tích hợp thanh toán SePay MBBank cho hệ thống đặt lịch cắt tóc.
+
+**Thông tin SePay:**
+- API Base: https://my.sepay.vn/userapi
+- Authentication: Bearer token từ env SEPAY_API_TOKEN
+- Tạo QR bằng API VietQR hoặc SePay QR endpoint
+- Webhook: SePay POST về endpoint của mình khi có giao dịch
+
+**Các endpoint:**
+
+POST /api/payments/create
+- verifyToken, body: { reservationId }
+- Logic:
+  1. Tìm reservation, kiểm tra chưa có payment
+  2. Tạo QR code URL theo format VietQR: https://img.vietqr.io/image/{BANK_ID}-{ACCOUNT_NO}-qr_only.jpg?amount={amount}&addInfo={transactionId}&accountName={ACCOUNT_NAME}
+  3. Tạo payment document với transactionId=`BARBER${Date.now()}`, status='pending'
+  4. Trả về { qrCodeUrl, transactionId, amount, expiredAt }
+
+GET /api/payments/:id
+- verifyToken, trả thông tin payment + reservation
+
+POST /api/payments/webhook
+- KHÔNG cần verifyToken (SePay gọi trực tiếp)
+- Verify: kiểm tra header x-sepay-signature hoặc apikey query param
+- Body từ SePay gồm: transferAmount, transactionID, content (thường chứa transactionId mình tạo)
+- Logic: parse content tìm transactionId, update payment.status='paid', update reservation.status='confirmed', gửi message thông báo cho customer
+- Luôn trả { success: true } để SePay không retry
+
+GET /api/payments/report (admin only)
+- Query: period(day/week/month/year), startDate, endDate
+- Trả: totalRevenue, count, groupBy method, top barbers by revenue
+
+**Env vars cần:** SEPAY_API_TOKEN, BANK_ID, ACCOUNT_NO, ACCOUNT_NAME, SEPAY_WEBHOOK_SECRET
+
+Viết đầy đủ với error handling, comments tiếng Việt, format response chuẩn { success, data, message }.
+          </div>
+        </div>
+
+        <!-- Prompt 5: Upload -->
+        <div class="card">
+          <div class="flex items-center gap-2 mb-3">
+            <span class="tag tag-purple">Prompt 5</span>
+            <span class="font-bold">Tạo utils/uploadHandler.js — Multer Config</span>
+          </div>
+          <div class="prompt-box">
+Viết file utils/uploadHandler.js sử dụng Multer để upload ảnh cho hệ thống barber.
+
+**Yêu cầu:**
+
+1. Cấu hình storage:
+   - Lưu vào thư mục /uploads/{type}/ (type: avatars, products, reviews, inventories)
+   - Tên file: {timestamp}-{random6chars}.{ext}
+   - Tạo thư mục tự động nếu chưa có (fs.mkdirSync)
+
+2. File filter:
+   - Chỉ chấp nhận image/jpeg, image/png, image/webp
+   - Reject files khác với message "Chỉ chấp nhận file ảnh (jpg, png, webp)"
+
+3. Giới hạn: fileSize max 5MB, tối đa 5 files mỗi request
+
+4. Export các middleware:
+   - uploadAvatar: upload.single('avatar') cho endpoint user
+   - uploadProductImages: upload.array('images', 5) cho products
+   - uploadReviewImages: upload.array('images', 3) cho reviews
+   - uploadInventoryImages: upload.array('images', 5) cho inventories
+
+5. Helper function: getFileUrl(filename, type) trả về đường dẫn public URL
+
+**Serve static:** Trong app.js thêm: app.use('/uploads', express.static('uploads'))
+
+Viết đầy đủ code, include error handling cho multer error (FileTooLarge, etc.).
+          </div>
+        </div>
+
+        <!-- Prompt 6: Frontend -->
+        <div class="card">
+          <div class="flex items-center gap-2 mb-3">
+            <span class="tag tag-gray">Prompt 6</span>
+            <span class="font-bold">Tạo trang đặt lịch Frontend (React)</span>
+          </div>
+          <div class="prompt-box">
+Hãy viết component React cho trang đặt lịch cắt tóc của hệ thống Barber Appointment Management System.
+
+**Design System:**
+- Màu chính: #006362 (teal đậm), #1b7d7c (container), #9bf1ef (accent nhạt)
+- Font: Manrope (heading), Inter (body)
+- Style: Clean, professional, hiện đại — tương tự thiết kế Barber Atelier
+
+**Tên component:** BookingPage.jsx
+
+**Luồng 4 bước (Step wizard):**
+1. Chọn dịch vụ — gọi GET /api/products, hiển thị card grid có ảnh, tên, giá, thời lượng; có thể chọn nhiều
+2. Chọn thợ & ngày giờ — gọi GET /api/users?role=barber, sau khi chọn thợ + ngày gọi GET /api/reservations/slots?barberId=&date= để hiển thị slot trống
+3. Xác nhận — hiển thị tổng kết đơn hàng (dịch vụ, thợ, giờ, tổng tiền)
+4. Thanh toán — gọi POST /api/payments/create, hiển thị QR code MBBank, polling GET /api/payments/:id mỗi 3 giây để kiểm tra status, khi paid show success screen
+
+**Yêu cầu kỹ thuật:**
+- Dùng React hooks (useState, useEffect, useCallback)
+- Axios để gọi API, token lấy từ localStorage
+- Responsive mobile-first với Tailwind CSS
+- Loading states và error handling
+- Animation chuyển step mượt mà
+
+Viết đầy đủ code một file BookingPage.jsx hoàn chỉnh.
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ─── 10. REPORT ─── -->
+    <section id="report">
+      <div class="section-title">📸 Hướng dẫn Báo cáo & Postman</div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="card">
+          <p class="font-bold font-headline mb-4 text-base">Danh sách ảnh Postman cần chụp</p>
+          <div class="space-y-2 text-sm">
+            <div class="flex items-start gap-2 p-2 bg-surface-container-low rounded-lg"><span class="text-primary font-bold min-w-[20px]">01</span><div><div class="font-semibold">POST /api/auth/register</div><div class="text-xs text-slate-500">Body + Response 201 (user created)</div></div></div>
+            <div class="flex items-start gap-2 p-2 bg-surface-container-low rounded-lg"><span class="text-primary font-bold min-w-[20px]">02</span><div><div class="font-semibold">POST /api/auth/login</div><div class="text-xs text-slate-500">Body + Response với JWT token</div></div></div>
+            <div class="flex items-start gap-2 p-2 bg-surface-container-low rounded-lg"><span class="text-primary font-bold min-w-[20px]">03</span><div><div class="font-semibold">POST /api/products (upload ảnh)</div><div class="text-xs text-slate-500">Form-data với file images[] + response</div></div></div>
+            <div class="flex items-start gap-2 p-2 bg-surface-container-low rounded-lg"><span class="text-primary font-bold min-w-[20px]">04</span><div><div class="font-semibold">GET /api/products?categoryId=</div><div class="text-xs text-slate-500">Danh sách dịch vụ có pagination</div></div></div>
+            <div class="flex items-start gap-2 p-2 bg-surface-container-low rounded-lg"><span class="text-primary font-bold min-w-[20px]">05</span><div><div class="font-semibold">GET /api/reservations/slots</div><div class="text-xs text-slate-500">Query barberId + date, response slots</div></div></div>
+            <div class="flex items-start gap-2 p-2 bg-surface-container-low rounded-lg"><span class="text-primary font-bold min-w-[20px]">06</span><div><div class="font-semibold">POST /api/reservations</div><div class="text-xs text-slate-500">Tạo lịch hẹn, Authorization header</div></div></div>
+            <div class="flex items-start gap-2 p-2 bg-surface-container-low rounded-lg"><span class="text-primary font-bold min-w-[20px]">07</span><div><div class="font-semibold">POST /api/payments/create</div><div class="text-xs text-slate-500">Response chứa qrCodeUrl</div></div></div>
+            <div class="flex items-start gap-2 p-2 bg-surface-container-low rounded-lg"><span class="text-primary font-bold min-w-[20px]">08</span><div><div class="font-semibold">POST /api/payments/webhook</div><div class="text-xs text-slate-500">Simulate SePay callback, response success</div></div></div>
+            <div class="flex items-start gap-2 p-2 bg-surface-container-low rounded-lg"><span class="text-primary font-bold min-w-[20px]">09</span><div><div class="font-semibold">PATCH /api/reservations/:id/status</div><div class="text-xs text-slate-500">Barber token, body status:done</div></div></div>
+            <div class="flex items-start gap-2 p-2 bg-surface-container-low rounded-lg"><span class="text-primary font-bold min-w-[20px]">10</span><div><div class="font-semibold">POST /api/reviews (upload ảnh)</div><div class="text-xs text-slate-500">Customer token, form-data images</div></div></div>
+            <div class="flex items-start gap-2 p-2 bg-surface-container-low rounded-lg"><span class="text-primary font-bold min-w-[20px]">11</span><div><div class="font-semibold">GET /api/payments/report</div><div class="text-xs text-slate-500">Admin token, query period=month</div></div></div>
+            <div class="flex items-start gap-2 p-2 bg-surface-container-low rounded-lg"><span class="text-primary font-bold min-w-[20px]">12</span><div><div class="font-semibold">Test lỗi 401/403</div><div class="text-xs text-slate-500">Gọi endpoint cần auth không có token</div></div></div>
+          </div>
+        </div>
+        <div class="card">
+          <p class="font-bold font-headline mb-4 text-base">Cấu trúc báo cáo môn học</p>
+          <div class="space-y-3">
+            <div class="bg-primary/5 border-l-4 border-primary rounded-r-xl p-3">
+              <div class="font-bold text-sm text-primary">Chương 1: Giới thiệu hệ thống</div>
+              <div class="text-xs text-slate-600 mt-1">Mô tả bài toán, mục tiêu, phạm vi, đối tượng sử dụng</div>
+            </div>
+            <div class="bg-primary/5 border-l-4 border-teal-400 rounded-r-xl p-3">
+              <div class="font-bold text-sm text-teal-700">Chương 2: Phân tích nghiệp vụ</div>
+              <div class="text-xs text-slate-600 mt-1">Use case diagram, mô tả các actor, luồng chức năng</div>
+            </div>
+            <div class="bg-primary/5 border-l-4 border-blue-400 rounded-r-xl p-3">
+              <div class="font-bold text-sm text-blue-700">Chương 3: Thiết kế hệ thống</div>
+              <div class="text-xs text-slate-600 mt-1">ERD, API design, folder structure, tech stack</div>
+            </div>
+            <div class="bg-primary/5 border-l-4 border-amber-400 rounded-r-xl p-3">
+              <div class="font-bold text-sm text-amber-700">Chương 4: Cài đặt & Triển khai</div>
+              <div class="text-xs text-slate-600 mt-1">Hướng dẫn setup, .env config, chạy dự án</div>
+            </div>
+            <div class="bg-primary/5 border-l-4 border-orange-500 rounded-r-xl p-3">
+              <div class="font-bold text-sm text-orange-700">Chương 5: Demo & Test API</div>
+              <div class="text-xs text-slate-600 mt-1">Ảnh chụp Postman theo danh sách 12 mục bên trái</div>
+            </div>
+            <div class="bg-primary/5 border-l-4 border-slate-400 rounded-r-xl p-3">
+              <div class="font-bold text-sm text-slate-700">Chương 6: Kết luận & phân công</div>
+              <div class="text-xs text-slate-600 mt-1">Bảng phân công thành viên, % đóng góp, hướng phát triển</div>
+            </div>
+          </div>
+          <div class="mt-4 p-3 bg-teal-50 border border-teal-200 rounded-xl text-xs text-teal-800">
+            💡 <b>Tip:</b> Export Postman Collection dưới dạng file .json và đính kèm vào báo cáo. Sử dụng Postman Environment để quản lý baseUrl và token.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Banner -->
+    <div class="relative rounded-3xl overflow-hidden bg-gradient-to-br from-primary to-primary-container p-12 text-white">
+      <div class="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl"></div>
+      <div class="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8">
+        <div class="max-w-xl text-center md:text-left">
+          <h2 class="text-3xl font-bold mb-4 font-headline">Chúc nhóm bạn code thành công! ✂️</h2>
+          <p class="text-white/80 text-sm">10 models · 3 thành viên · RESTful API · SePay MBBank · CRUD + Auth + Upload đầy đủ</p>
+          <div class="flex gap-2 mt-4 flex-wrap">
+            <span class="bg-white/20 text-white text-xs font-bold px-3 py-1 rounded-full">Node.js</span>
+            <span class="bg-white/20 text-white text-xs font-bold px-3 py-1 rounded-full">Express</span>
+            <span class="bg-white/20 text-white text-xs font-bold px-3 py-1 rounded-full">MongoDB</span>
+            <span class="bg-white/20 text-white text-xs font-bold px-3 py-1 rounded-full">JWT</span>
+            <span class="bg-white/20 text-white text-xs font-bold px-3 py-1 rounded-full">Multer</span>
+            <span class="bg-white/20 text-white text-xs font-bold px-3 py-1 rounded-full">SePay</span>
+            <span class="bg-white/20 text-white text-xs font-bold px-3 py-1 rounded-full">React</span>
+          </div>
+        </div>
+        <div class="text-center">
+          <div class="text-6xl font-extrabold font-headline">10</div>
+          <div class="text-white/80 text-sm font-bold uppercase tracking-widest">Models</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<!-- Mobile nav -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full glass-panel flex justify-around py-3 z-50 border-t border-slate-200/60">
+  <a href="#overview" class="flex flex-col items-center gap-1 text-teal-700">
+    <span class="material-symbols-outlined text-xl" style="font-variation-settings:'FILL' 1;">info</span>
+    <span class="text-[9px] font-bold uppercase tracking-widest">Tổng quan</span>
+  </a>
+  <a href="#models" class="flex flex-col items-center gap-1 text-slate-400">
+    <span class="material-symbols-outlined text-xl">database</span>
+    <span class="text-[9px] font-bold uppercase tracking-widest">Models</span>
+  </a>
+  <a href="#flows" class="flex flex-col items-center gap-1 text-slate-400">
+    <span class="material-symbols-outlined text-xl">account_tree</span>
+    <span class="text-[9px] font-bold uppercase tracking-widest">Luồng</span>
+  </a>
+  <a href="#prompts" class="flex flex-col items-center gap-1 text-slate-400">
+    <span class="material-symbols-outlined text-xl">smart_toy</span>
+    <span class="text-[9px] font-bold uppercase tracking-widest">Prompts</span>
+  </a>
+</nav>
+
+</body>
+</html>
