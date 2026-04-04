@@ -15,12 +15,12 @@
   --primary-soft: #9bf1ef;
   --tertiary: #864725;
   min-height: 100vh;
-  padding-bottom: 7.5rem;
   background:
     radial-gradient(circle at top right, rgba(155, 241, 239, 0.22), transparent 26%),
     linear-gradient(180deg, #fbfdff 0%, var(--background) 100%);
   color: var(--text);
   font-family: 'Inter', sans-serif;
+  width: 100%;
 }
 
 .time-page .material-symbols-outlined {
@@ -30,67 +30,14 @@
 
 .time-page h1,
 .time-page h2,
-.time-page h3,
-.time-page .time-brand {
+.time-page h3 {
   font-family: 'Manrope', sans-serif;
-}
-
-.time-topbar {
-  position: fixed;
-  inset: 0 0 auto;
-  z-index: 50;
-  background: rgba(255, 255, 255, 0.82);
-  backdrop-filter: blur(18px);
-  box-shadow: 0 20px 40px rgba(9, 29, 46, 0.06);
-}
-
-.time-topbar-inner {
-  width: min(100%, 1600px);
-  height: 5rem;
-  margin: 0 auto;
-  padding: 0 2rem;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-}
-
-.time-brand {
-  font-size: 1.75rem;
-  font-weight: 800;
-  letter-spacing: -0.04em;
-  color: var(--primary-strong);
-}
-
-.time-nav {
-  display: none;
-  align-items: center;
-  gap: 2rem;
-  font-family: 'Manrope', sans-serif;
-  font-weight: 700;
-}
-
-.time-nav a {
-  color: #64748b;
-  text-decoration: none;
-}
-
-.time-nav a.active {
-  color: var(--primary-strong);
-  border-bottom: 2px solid var(--primary-strong);
-  padding-bottom: 0.25rem;
-}
-
-.time-topbar-actions {
-  display: flex;
-  gap: 1rem;
-  color: var(--muted);
 }
 
 .time-content {
   width: min(100%, 1440px);
   margin: 0 auto;
-  padding: 7rem 1rem 2rem;
+  padding: 6rem 2rem 5rem;
 }
 
 .time-stepper {

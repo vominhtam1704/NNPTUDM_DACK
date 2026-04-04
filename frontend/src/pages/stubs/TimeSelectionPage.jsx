@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { getAvailableSlots } from '../../services/reservations';
+import PageLayout from '../../components/PageLayout';
 import '../TimeSelectionPage.scss';
 
 const defaultSelectedBarber = {
@@ -102,13 +103,13 @@ const TimeSelectionPage = () => {
       ...defaultSelectedBarber,
       name: location.state?.selectedBarberName || defaultSelectedBarber.name,
       image: location.state?.selectedBarberAvatar || defaultSelectedBarber.image,
+      title: location.state?.selectedBarberTitle || defaultSelectedBarber.title,
     }),
     [location.state]
   );
 
   const selectedService = useMemo(
     () => {
-      // Handle multiple services (new format)
       if (location.state?.selectedServices && Array.isArray(location.state.selectedServices)) {
         return {
           id: 'multiple',
@@ -118,7 +119,6 @@ const TimeSelectionPage = () => {
         };
       }
 
-      // Fallback to single service (legacy format)
       return {
         id: location.state?.selectedServiceId || '',
         name: location.state?.selectedServiceName || 'Combo Cat & Goi Cao Cap',
@@ -148,12 +148,14 @@ const TimeSelectionPage = () => {
       setErrorMessage('');
 
       try {
-        const data = await getAvailableSlots(location.state.selectedBarberId, selectedDate);
+        const response = await getAvailableSlots(location.state.selectedBarberId, selectedDate);
         if (!active) {
           return;
         }
 
-        const nextSlots = Array.isArray(data?.availableSlots) ? data.availableSlots : [];
+        const slotsData = response?.data?.availableSlots || response?.availableSlots || [];
+        const nextSlots = Array.isArray(slotsData) ? slotsData : [];
+        
         setAvailableSlots(nextSlots);
         setSelectedTime((current) => (nextSlots.includes(current) ? current : nextSlots[0] || ''));
       } catch (error) {
@@ -219,192 +221,158 @@ const TimeSelectionPage = () => {
   };
 
   return (
-    <div className="time-page">
-      <header className="time-topbar">
-        <div className="time-topbar-inner">
-          <div className="time-brand">The Atelier</div>
-          <nav className="time-nav">
-            <a href="/#">Portfolio</a>
-            <a className="active" href="/#">
-              Appointments
-            </a>
-            <a href="/#">Services</a>
-          </nav>
-          <div className="time-topbar-actions">
-            <span className="material-symbols-outlined">notifications</span>
-            <span className="material-symbols-outlined">account_circle</span>
-          </div>
-        </div>
-      </header>
-
-      <main className="time-content">
-        <section className="time-stepper">
-          <div className="time-step completed">
-            <div className="time-step-circle">
-              <span className="material-symbols-outlined">check</span>
+    <PageLayout>
+      <div className="time-page">
+        <main className="time-content">
+          <section className="time-stepper">
+            <div className="time-step completed">
+              <div className="time-step-circle">
+                <span className="material-symbols-outlined">check</span>
+              </div>
+              <span>Dich vu</span>
             </div>
-            <span>Dich vu</span>
-          </div>
-          <div className="time-step-line completed" />
-          <div className="time-step active">
-            <div className="time-step-circle">2</div>
-            <span>Thoi gian</span>
-          </div>
-          <div className="time-step-line" />
-          <div className="time-step">
-            <div className="time-step-circle">3</div>
-            <span>Thong tin</span>
-          </div>
-          <div className="time-step-line" />
-          <div className="time-step">
-            <div className="time-step-circle">4</div>
-            <span>Xac nhan</span>
-          </div>
-        </section>
-
-        <div className="time-grid">
-          <section className="time-selection">
-            <section className="date-section">
-              <div className="section-title-row">
-                <h2>Chon Ngay</h2>
-                <div className="section-meta">
-                  <span>{selectedDateOption?.monthLabel || 'Dang cap nhat'}</span>
-                  <span className="material-symbols-outlined">calendar_month</span>
-                </div>
-              </div>
-
-              <div className="date-slider">
-                {dateOptions.map((date) => (
-                  <button
-                    className={['date-card', selectedDate === date.id ? 'active' : ''].filter(Boolean).join(' ')}
-                    key={date.id}
-                    onClick={() => setSelectedDate(date.id)}
-                    type="button"
-                  >
-                    <span>{date.label}</span>
-                    <strong>{date.day}</strong>
-                  </button>
-                ))}
-              </div>
-            </section>
-
-            <section className="slot-section">
-              {isLoadingSlots ? <div className="tip-card">Dang tai khung gio trong...</div> : null}
-              {!isLoadingSlots && errorMessage ? <div className="tip-card">{errorMessage}</div> : null}
-
-              <div className="slot-group">
-                <div className="slot-header">
-                  <span className="material-symbols-outlined tertiary">light_mode</span>
-                  <h3>Buoi Sang</h3>
-                </div>
-                <div className="slot-grid">
-                  {groupedSlots.morning.length > 0 ? groupedSlots.morning.map(renderSlot) : <p>Khong con lich.</p>}
-                </div>
-              </div>
-
-              <div className="slot-group">
-                <div className="slot-header">
-                  <span className="material-symbols-outlined primary">wb_twilight</span>
-                  <h3>Buoi Chieu</h3>
-                </div>
-                <div className="slot-grid">
-                  {groupedSlots.afternoon.length > 0 ? (
-                    groupedSlots.afternoon.map(renderSlot)
-                  ) : (
-                    <p>Khong con lich.</p>
-                  )}
-                </div>
-              </div>
-            </section>
+            <div className="time-step-line completed" />
+            <div className="time-step active">
+              <div className="time-step-circle">2</div>
+              <span>Thoi gian</span>
+            </div>
+            <div className="time-step-line" />
+            <div className="time-step">
+              <div className="time-step-circle">3</div>
+              <span>Thong tin</span>
+            </div>
+            <div className="time-step-line" />
+            <div className="time-step">
+              <div className="time-step-circle">4</div>
+              <span>Xac nhan</span>
+            </div>
           </section>
 
-          <aside className="time-sidebar">
-            <div className="summary-card">
-              <div className="summary-card-head">
-                <h3>Tom tat lich hen</h3>
+          <div className="time-grid">
+            <section className="time-selection">
+              <section className="date-section">
+                <div className="section-title-row">
+                  <h2>Chon Ngay</h2>
+                  <div className="section-meta">
+                    <span>{selectedDateOption?.monthLabel || 'Dang cap nhat'}</span>
+                    <span className="material-symbols-outlined">calendar_month</span>
+                  </div>
+                </div>
+
+                <div className="date-slider">
+                  {dateOptions.map((date) => (
+                    <button
+                      className={['date-card', selectedDate === date.id ? 'active' : ''].filter(Boolean).join(' ')}
+                      key={date.id}
+                      onClick={() => setSelectedDate(date.id)}
+                      type="button"
+                    >
+                      <span>{date.label}</span>
+                      <strong>{date.day}</strong>
+                    </button>
+                  ))}
+                </div>
+              </section>
+
+              <section className="slot-section">
+                {isLoadingSlots ? <div className="tip-card">Dang tai khung gio trong...</div> : null}
+                {!isLoadingSlots && errorMessage ? <div className="tip-card">{errorMessage}</div> : null}
+
+                <div className="slot-group">
+                  <div className="slot-header">
+                    <span className="material-symbols-outlined tertiary">light_mode</span>
+                    <h3>Buoi Sang</h3>
+                  </div>
+                  <div className="slot-grid">
+                    {groupedSlots.morning.length > 0 ? groupedSlots.morning.map(renderSlot) : <p>Khong con lich.</p>}
+                  </div>
+                </div>
+
+                <div className="slot-group">
+                  <div className="slot-header">
+                    <span className="material-symbols-outlined primary">wb_twilight</span>
+                    <h3>Buoi Chieu</h3>
+                  </div>
+                  <div className="slot-grid">
+                    {groupedSlots.afternoon.length > 0 ? (
+                      groupedSlots.afternoon.map(renderSlot)
+                    ) : (
+                      <p>Khong con lich.</p>
+                    )}
+                  </div>
+                </div>
+              </section>
+            </section>
+
+            <aside className="time-sidebar">
+              <div className="summary-card">
+                <div className="summary-card-head">
+                  <h3>Tom tat lich hen</h3>
+                </div>
+
+                <div className="summary-card-body">
+                  <div className="barber-summary">
+                    <img alt={selectedBarber.name} src={selectedBarber.image} />
+                    <div>
+                      <p className="eyebrow">Tho cat toc</p>
+                      <p className="barber-name">{selectedBarber.name}</p>
+                      <div className="barber-role">
+                        <span className="material-symbols-outlined">stars</span>
+                        <span>{selectedBarber.title}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="service-summary">
+                    <p className="eyebrow">Dich vu da chon</p>
+                    <div className="service-summary-row">
+                      <p>{selectedService.name}</p>
+                      <strong>{formatCurrency(selectedService.price)}</strong>
+                    </div>
+                    <span>Thoi gian du kien: {selectedService.duration} phut</span>
+                  </div>
+
+                  <div className="selection-summary">
+                    <div className="selection-item">
+                      <div className="selection-icon">
+                        <span className="material-symbols-outlined">event</span>
+                      </div>
+                      <div>
+                        <p className="eyebrow">Ngay hen</p>
+                        <p>{formatSelectedDateLabel(selectedDateOption)}</p>
+                      </div>
+                    </div>
+
+                    <div className="selection-item">
+                      <div className="selection-icon">
+                        <span className="material-symbols-outlined">schedule</span>
+                      </div>
+                      <div>
+                        <p className="eyebrow">Gio hen</p>
+                        <p>{selectedTime ? `${toDisplayTime(selectedTime)} - ${selectedEndTime}` : 'Chua chon gio'}</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <button className="primary-cta" onClick={handleContinue} type="button">
+                    Tiep tuc buoc 3
+                    <span className="material-symbols-outlined">arrow_forward</span>
+                  </button>
+
+                  <button className="secondary-cta" onClick={() => navigate('/booking')} type="button">
+                    Quay lai buoc 1
+                  </button>
+                </div>
               </div>
 
-              <div className="summary-card-body">
-                <div className="barber-summary">
-                  <img alt={selectedBarber.name} src={selectedBarber.image} />
-                  <div>
-                    <p className="eyebrow">Tho cat toc</p>
-                    <p className="barber-name">{selectedBarber.name}</p>
-                    <div className="barber-role">
-                      <span className="material-symbols-outlined">stars</span>
-                      <span>{selectedBarber.title}</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="service-summary">
-                  <p className="eyebrow">Dich vu da chon</p>
-                  <div className="service-summary-row">
-                    <p>{selectedService.name}</p>
-                    <strong>{formatCurrency(selectedService.price)}</strong>
-                  </div>
-                  <span>Thoi gian du kien: {selectedService.duration} phut</span>
-                </div>
-
-                <div className="selection-summary">
-                  <div className="selection-item">
-                    <div className="selection-icon">
-                      <span className="material-symbols-outlined">event</span>
-                    </div>
-                    <div>
-                      <p className="eyebrow">Ngay hen</p>
-                      <p>{formatSelectedDateLabel(selectedDateOption)}</p>
-                    </div>
-                  </div>
-
-                  <div className="selection-item">
-                    <div className="selection-icon">
-                      <span className="material-symbols-outlined">schedule</span>
-                    </div>
-                    <div>
-                      <p className="eyebrow">Gio hen</p>
-                      <p>{selectedTime ? `${toDisplayTime(selectedTime)} - ${selectedEndTime}` : 'Chua chon gio'}</p>
-                    </div>
-                  </div>
-                </div>
-
-                <button className="primary-cta" onClick={handleContinue} type="button">
-                  Tiep tuc buoc 3
-                  <span className="material-symbols-outlined">arrow_forward</span>
-                </button>
-
-                <button className="secondary-cta" onClick={() => navigate('/booking')} type="button">
-                  Quay lai buoc 1
-                </button>
+              <div className="tip-card">
+                <p>"Goi y: Buoi sang thuong yen tinh hon cho cac dich vu cham soc da mat."</p>
               </div>
-            </div>
-
-            <div className="tip-card">
-              <p>"Goi y: Buoi sang thuong yen tinh hon cho cac dich vu cham soc da mat."</p>
-            </div>
-          </aside>
-        </div>
-      </main>
-
-      <nav className="time-bottom-nav">
-        <a href="/#">
-          <span className="material-symbols-outlined">home</span>
-          <span>Home</span>
-        </a>
-        <a className="active" href="/#">
-          <span className="material-symbols-outlined">calendar_today</span>
-          <span>Bookings</span>
-        </a>
-        <a href="/#">
-          <span className="material-symbols-outlined">chat_bubble</span>
-          <span>Inbox</span>
-        </a>
-        <a href="/#">
-          <span className="material-symbols-outlined">person</span>
-          <span>Profile</span>
-        </a>
-      </nav>
-    </div>
+            </aside>
+          </div>
+        </main>
+      </div>
+    </PageLayout>
   );
 };
 
