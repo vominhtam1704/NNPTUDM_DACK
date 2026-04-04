@@ -5,7 +5,14 @@ const mongoose = require('mongoose');
 
 const connectDB = async () => {
   try {
-    const uri = process.env.MONGODB_URI || 'mongodb://localhost:27017/barber_atelier';
+    let uri = process.env.MONGODB_URI || 'mongodb://localhost:27017/barber_atelier';
+    
+    // Auto-inject credentials if provided in .env and missing from URI
+    if (process.env.MONGODB_USER && process.env.MONGODB_PASSWORD && !uri.includes('@')) {
+      const user = encodeURIComponent(process.env.MONGODB_USER);
+      const pass = encodeURIComponent(process.env.MONGODB_PASSWORD);
+      uri = uri.replace('mongodb://', `mongodb://${user}:${pass}@`);
+    }
 
     await mongoose.connect(uri, {
       useNewUrlParser: true,

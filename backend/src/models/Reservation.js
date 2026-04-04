@@ -46,6 +46,16 @@ const reservationSchema = new mongoose.Schema({
   },
   
   notes: String,
+
+  paymentId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Payment'
+  },
+
+  reviewId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Review'
+  },
   
   createdAt: {
     type: Date,
