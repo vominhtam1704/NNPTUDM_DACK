@@ -18,16 +18,7 @@ const EPayCheckout = ({
   ePayApiUrl,
   onCancel
 }) => {
-  useEffect(() => {
-    // Auto-submit ePay payment form after small delay
-    const timer = setTimeout(() => {
-      submitEPayForm();
-    }, 500);
-
-    return () => clearTimeout(timer);
-  }, [submitEPayForm]);
-
-  const submitEPayForm = () => {
+  const submitEPayForm = React.useCallback(() => {
     // Create hidden form and submit to ePay
     const form = document.createElement('form');
     form.method = 'POST';
@@ -55,7 +46,16 @@ const EPayCheckout = ({
 
     document.body.appendChild(form);
     form.submit();
-  };
+  }, [amount, ePayApiUrl, merchantId, notifyUrl, referenceCode, returnUrl]);
+
+  useEffect(() => {
+    // Auto-submit ePay payment form after small delay
+    const timer = setTimeout(() => {
+      submitEPayForm();
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [submitEPayForm]);
 
   return (
     <div className="epay-checkout-overlay">
