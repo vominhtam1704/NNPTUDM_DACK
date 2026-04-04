@@ -75,6 +75,11 @@ exports.registerUser = async (req, res) => {
       name: newUser.name,
       email: newUser.email,
       phone: newUser.phone,
+      address: newUser.address,
+      birthDate: newUser.birthDate,
+      gender: newUser.gender,
+      loyaltyPoints: newUser.loyaltyPoints,
+      membershipTier: newUser.membershipTier,
       role: newUser.role
     };
 
@@ -137,7 +142,12 @@ exports.loginUser = async (req, res) => {
       name: user.name,
       email: user.email,
       phone: user.phone,
+      address: user.address,
+      birthDate: user.birthDate,
+      gender: user.gender,
       avatar: user.avatar,
+      loyaltyPoints: user.loyaltyPoints,
+      membershipTier: user.membershipTier,
       role: user.role
     };
 
@@ -249,10 +259,15 @@ exports.getCurrentUser = async (req, res) => {
       name: user.name,
       email: user.email,
       phone: user.phone,
+      address: user.address,
+      birthDate: user.birthDate,
+      gender: user.gender,
       avatar: user.avatar,
       role: user.role,
       isActive: user.isActive,
-      bio: user.bio
+      bio: user.bio,
+      loyaltyPoints: user.loyaltyPoints,
+      membershipTier: user.membershipTier
     };
 
     res.status(200).json(

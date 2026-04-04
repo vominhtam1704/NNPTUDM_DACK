@@ -20,6 +20,21 @@ router.get(
 );
 
 /**
+ * @route   GET /api/payments/epay/mock-checkout
+ * @desc    Mock E-Pay checkout page for development/testing
+ * @access  Public
+ */
+router.get('/epay/mock-checkout', paymentController.mockEPayCheckout);
+
+/**
+ * @route   POST /api/payments/epay/webhook
+ * @desc    E-Pay webhook - receive payment confirmation
+ * @access  Public (but signature verified)
+ * ⚠️ CRITICAL - Signature verification required
+ */
+router.post('/epay/webhook', paymentController.ePayWebhook);
+
+/**
  * @route   GET /api/payments/:id
  * @desc    Get payment by ID
  * @access  Protected
@@ -39,6 +54,13 @@ router.get('/:id/status', authenticateToken, paymentController.checkPaymentStatu
  * @access  Protected
  */
 router.post('/', authenticateToken, paymentController.createPayment);
+
+/**
+ * @route   POST /api/payments/epay/checkout
+ * @desc    Create E-Pay payment and generate checkout URL
+ * @access  Protected
+ */
+router.post('/epay/checkout', authenticateToken, paymentController.createEPayPayment);
 
 /**
  * @route   POST /api/payments/webhook

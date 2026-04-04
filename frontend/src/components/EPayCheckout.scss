@@ -1,0 +1,145 @@
+.epay-checkout-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 20px;
+}
+
+.epay-checkout-modal {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  max-width: 480px;
+  width: 100%;
+  padding: 48px 32px 32px;
+  text-align: center;
+  position: relative;
+}
+
+.epay-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+}
+
+.epay-spinner {
+  width: 64px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.epay-spinner .spinning {
+  font-size: 40px;
+  color: #0066cc;
+  animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.epay-loading h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+  font-family: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+.epay-loading p {
+  margin: 0;
+  font-size: 14px;
+  color: #666;
+  line-height: 1.5;
+}
+
+.payment-info {
+  background: #f5f5f5;
+  border-radius: 12px;
+  padding: 16px;
+  margin-top: 8px;
+  text-align: left;
+}
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  font-size: 14px;
+  color: #555;
+  margin-bottom: 8px;
+}
+
+.info-row:last-child {
+  margin-bottom: 0;
+}
+
+.info-row strong {
+  color: #0066cc;
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.info-row em {
+  color: #0066cc;
+  font-style: normal;
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+}
+
+.epay-cancel-btn {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 40px;
+  height: 40px;
+  border: none;
+  background: #f0f0f0;
+  color: #666;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  transition: all 0.2s ease;
+  font-family: system-ui;
+}
+
+.epay-cancel-btn:hover {
+  background: #e0e0e0;
+  color: #333;
+}
+
+.epay-cancel-btn:active {
+  transform: scale(0.95);
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .epay-checkout-modal {
+    max-width: 320px;
+    padding: 40px 24px 24px;
+  }
+
+  .epay-loading h3 {
+    font-size: 16px;
+  }
+
+  .epay-loading p {
+    font-size: 13px;
+  }
+}

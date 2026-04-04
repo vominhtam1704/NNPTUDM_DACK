@@ -30,6 +30,23 @@ const userSchema = new mongoose.Schema({
     type: String,
     trim: true
   },
+
+  address: {
+    type: String,
+    trim: true,
+    default: ''
+  },
+
+  birthDate: {
+    type: Date,
+    default: null
+  },
+
+  gender: {
+    type: String,
+    enum: ['male', 'female', 'other', ''],
+    default: ''
+  },
   
   avatar: {
     type: String, // URL to avatar image
@@ -50,6 +67,16 @@ const userSchema = new mongoose.Schema({
   bio: {
     type: String, // For barbers
     default: null
+  },
+
+  loyaltyPoints: {
+    type: Number,
+    default: 0
+  },
+
+  membershipTier: {
+    type: String,
+    default: 'Standard'
   },
   
   createdAt: {

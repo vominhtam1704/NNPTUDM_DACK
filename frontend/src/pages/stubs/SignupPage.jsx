@@ -1,7 +1,7 @@
 // ============================================
 // SIGNUP PAGE STUB - Member 1 to implement
 // ============================================
-import React, { useState } from 'react';
+import React from 'react';
 
 const SignupPage = () => {
   return (

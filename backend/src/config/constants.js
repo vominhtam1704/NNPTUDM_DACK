@@ -25,7 +25,8 @@ const PAYMENT_STATUS = {
 const PAYMENT_METHOD = {
   CASH: 'cash',
   TRANSFER: 'transfer',
-  QR: 'qr'
+  QR: 'qr',
+  EPAY: 'epay'
 };
 
 const MESSAGE_TYPE = {

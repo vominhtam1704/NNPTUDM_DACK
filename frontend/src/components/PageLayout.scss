@@ -1,0 +1,25 @@
+.page-layout {
+  display: flex;
+  min-height: 100vh;
+  background: #f7f9ff;
+
+  .page-layout-content {
+    flex: 1;
+    margin-left: 16rem;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 767px) {
+  .page-layout {
+    flex-direction: column;
+
+    .page-layout-content {
+      margin-left: 0;
+      margin-bottom: 60px; /* Space for bottom navigation */
+    }
+  }
+}

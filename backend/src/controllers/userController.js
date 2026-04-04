@@ -2,8 +2,12 @@
 // USERCONTROLLER.JS - USER MANAGEMENT
 // ============================================
 const User = require('../models/User');
+const Review = require('../models/Review');
+const Reservation = require('../models/Reservation');
+const Product = require('../models/Product');
 const { formatSuccess, formatError, formatPaginated } = require('../utils/response');
 const { hashPassword } = require('../utils/password');
+const { ROLES, APPOINTMENT_STATUS, TIME_SLOTS } = require('../config/constants');
 
 /**
  * Get All Users - GET /users
@@ -78,10 +82,10 @@ exports.getUserById = async (req, res) => {
 exports.updateUser = async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, phone, avatar, bio } = req.body;
+    const { name, phone, avatar, bio, address, birthDate, gender } = req.body;
 
     // ===== VALIDATION =====
-    if (!name && !phone && !avatar && !bio) {
+    if (!name && !phone && !avatar && !bio && address === undefined && birthDate === undefined && gender === undefined) {
       return res.status(400).json(
         formatError('No fields to update')
       );
@@ -93,6 +97,9 @@ exports.updateUser = async (req, res) => {
     if (phone) updateData.phone = phone;
     if (avatar) updateData.avatar = avatar;
     if (bio) updateData.bio = bio;
+    if (address !== undefined) updateData.address = address;
+    if (birthDate !== undefined) updateData.birthDate = birthDate || null;
+    if (gender !== undefined) updateData.gender = gender;
 
     // ===== UPDATE USER =====
     const user = await User.findByIdAndUpdate(
@@ -236,6 +243,183 @@ exports.getUsersByRole = async (req, res) => {
     res.status(500).json(
       formatError('Failed to fetch users: ' + error.message)
     );
+  }
+};
+
+exports.getPublicBarbers = async (req, res) => {
+  try {
+    const { limit = 12 } = req.query;
+
+    const barbers = await User.find({ role: ROLES.BARBER, isActive: true })
+      .select('name avatar bio createdAt')
+      .sort({ createdAt: -1 })
+      .limit(parseInt(limit, 10));
+
+    const barberIds = barbers.map((barber) => barber._id);
+
+    const [reviewStats, reservationStats, recentReviews] = await Promise.all([
+      Review.aggregate([
+        { $match: { barberId: { $in: barberIds } } },
+        {
+          $group: {
+            _id: '$barberId',
+            averageRating: { $avg: '$rating' },
+            totalReviews: { $sum: 1 },
+          },
+        },
+      ]),
+      Reservation.aggregate([
+        { $match: { barberId: { $in: barberIds }, status: { $in: [APPOINTMENT_STATUS.CONFIRMED, APPOINTMENT_STATUS.DONE] } } },
+        {
+          $group: {
+            _id: '$barberId',
+            totalAppointments: { $sum: 1 },
+          },
+        },
+      ]),
+      Review.find({ barberId: { $in: barberIds } })
+        .populate('customerId', 'name')
+        .sort({ createdAt: -1 })
+        .limit(Math.max(parseInt(limit, 10) * 2, 6))
+        .lean(),
+    ]);
+
+    const reviewMap = new Map(reviewStats.map((item) => [item._id.toString(), item]));
+    const reservationMap = new Map(reservationStats.map((item) => [item._id.toString(), item]));
+    const reviewPreviewMap = recentReviews.reduce((map, review) => {
+      const key = review.barberId?.toString();
+      if (!key || map.has(key)) {
+        return map;
+      }
+      map.set(key, {
+        comment: review.comment || '',
+        customerName: review.customerId?.name || 'Khach hang',
+        rating: review.rating,
+      });
+      return map;
+    }, new Map());
+
+    const data = barbers.map((barber) => {
+      const review = reviewMap.get(barber._id.toString());
+      const reservations = reservationMap.get(barber._id.toString());
+      const preview = reviewPreviewMap.get(barber._id.toString());
+      const bio = barber.bio || 'Tho cat toc chuyen nghiep voi phong cach hien dai va tu van tan tam.';
+
+      return {
+        _id: barber._id,
+        name: barber.name,
+        avatar: barber.avatar,
+        bio,
+        rating: review ? Number(review.averageRating.toFixed(2)) : 0,
+        totalReviews: review?.totalReviews || 0,
+        totalAppointments: reservations?.totalAppointments || 0,
+        reviewPreview: preview || null,
+        tags: bio
+          .split(/[,.]/)
+          .map((item) => item.trim())
+          .filter(Boolean)
+          .slice(0, 2),
+      };
+    });
+
+    res.status(200).json(formatSuccess(data, 'Public barbers retrieved successfully'));
+  } catch (error) {
+    console.error('Get public barbers error:', error);
+    res.status(500).json(formatError('Failed to fetch barbers: ' + error.message));
+  }
+};
+
+exports.getPublicBarberProfile = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const barber = await User.findOne({ _id: id, role: ROLES.BARBER, isActive: true }).select('-password');
+    if (!barber) {
+      return res.status(404).json(formatError('Barber not found'));
+    }
+
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+    const todayEnd = new Date();
+    todayEnd.setHours(23, 59, 59, 999);
+
+    const [reviews, reviewStats, reservations, services] = await Promise.all([
+      Review.find({ barberId: id })
+        .populate('customerId', 'name avatar')
+        .populate('productId', 'name price duration')
+        .sort({ createdAt: -1 })
+        .limit(3),
+      Review.aggregate([
+        { $match: { barberId: barber._id } },
+        {
+          $group: {
+            _id: '$barberId',
+            averageRating: { $avg: '$rating' },
+            totalReviews: { $sum: 1 },
+          },
+        },
+      ]),
+      Reservation.find({ barberId: id }).populate('serviceId', 'name').sort({ appointmentDate: -1 }).limit(200),
+      Product.find({ isActive: true }).select('name description price duration thumbnail').sort({ createdAt: -1 }).limit(6),
+    ]);
+
+    const statBlock = reviewStats[0] || null;
+    const completedAppointments = reservations.filter(
+      (item) => item.status === APPOINTMENT_STATUS.DONE || item.status === APPOINTMENT_STATUS.CONFIRMED
+    ).length;
+    const bookedToday = reservations.filter(
+      (item) =>
+        item.appointmentDate >= todayStart &&
+        item.appointmentDate <= todayEnd &&
+        [APPOINTMENT_STATUS.PENDING, APPOINTMENT_STATUS.CONFIRMED].includes(item.status)
+    ).length;
+
+    const specialties = Array.from(
+      new Set(
+        reservations
+          .map((item) => item.serviceId?.name)
+          .filter(Boolean)
+      )
+    ).slice(0, 3);
+
+    const yearsActive = Math.max(1, new Date().getFullYear() - new Date(barber.createdAt).getFullYear() + 1);
+
+    res.status(200).json(
+      formatSuccess(
+        {
+          barber: {
+            _id: barber._id,
+            name: barber.name,
+            avatar: barber.avatar,
+            bio: barber.bio,
+            phone: barber.phone,
+            email: barber.email,
+            role: barber.role,
+            createdAt: barber.createdAt,
+          },
+          stats: {
+            averageRating: statBlock ? Number(statBlock.averageRating.toFixed(1)) : 0,
+            totalReviews: statBlock?.totalReviews || 0,
+            totalAppointments: reservations.length,
+            completedAppointments,
+            yearsActive,
+            availableTodaySlots: Math.max(TIME_SLOTS.length - bookedToday, 0),
+          },
+          specialties,
+          services,
+          recentReviews: reviews,
+          schedule: [
+            { label: 'Thu Hai - Thu Sau', hours: '09:00 - 21:00', isOff: false },
+            { label: 'Thu Bay', hours: '08:00 - 22:00', isOff: false },
+            { label: 'Chu Nhat', hours: 'Nghi', isOff: true },
+          ],
+        },
+        'Barber profile retrieved successfully'
+      )
+    );
+  } catch (error) {
+    console.error('Get public barber profile error:', error);
+    res.status(500).json(formatError('Failed to fetch barber profile: ' + error.message));
   }
 };
 

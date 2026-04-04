@@ -7,22 +7,33 @@ import './App.scss';
 
 // Pages
 import HomePage from './pages/HomePage';
-import LoginPage from './pages/LoginPage';
-import SignupPage from './pages/SignupPage';
-import BookingPage from './pages/BookingPage';
-import PaymentPage from './pages/PaymentPage';
-import ProfilePage from './pages/ProfilePage';
-import AdminDashboardPage from './pages/AdminDashboardPage';
+import {
+  AccountProfilePage,
+  BarberProfilePage,
+  LoginPage,
+  SignupPage,
+  BookingPage,
+  TimeSelectionPage,
+  BookingDetailsPage,
+  PaymentPage,
+  BookingCompletePage,
+  ReviewBarberPage,
+  ProfilePage,
+  AdminDashboardPage,
+} from './pages';
 
 // Components
 import ProtectedRoute from './components/ProtectedRoute';
+import { AuthProvider } from './context/AuthContext';
 
 function App() {
   return (
-    <Router>
-      <Routes>
+    <AuthProvider>
+      <Router>
+        <Routes>
         {/* Public Routes */}
         <Route path="/" element={<HomePage />} />
+        <Route path="/barbers/:barberId" element={<BarberProfilePage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
 
@@ -35,6 +46,22 @@ function App() {
             </ProtectedRoute>
           } 
         />
+        <Route
+          path="/booking/time"
+          element={
+            <ProtectedRoute>
+              <TimeSelectionPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/booking/details"
+          element={
+            <ProtectedRoute>
+              <BookingDetailsPage />
+            </ProtectedRoute>
+          }
+        />
         <Route 
           path="/payment/:appointmentId" 
           element={
@@ -42,6 +69,38 @@ function App() {
               <PaymentPage />
             </ProtectedRoute>
           } 
+        />
+        <Route
+          path="/payment/:appointmentId/done"
+          element={
+            <ProtectedRoute>
+              <BookingCompletePage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/account/appointment/:appointmentId"
+          element={
+            <ProtectedRoute>
+              <BookingDetailsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/account"
+          element={
+            <ProtectedRoute>
+              <AccountProfilePage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/review/:appointmentId"
+          element={
+            <ProtectedRoute>
+              <ReviewBarberPage />
+            </ProtectedRoute>
+          }
         />
         <Route 
           path="/profile" 
@@ -64,6 +123,7 @@ function App() {
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>
+    </AuthProvider>
   );
 }
 

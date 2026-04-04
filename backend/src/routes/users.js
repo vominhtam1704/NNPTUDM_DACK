@@ -7,6 +7,9 @@ const userController = require('../controllers/userController');
 const { authenticateToken, authorizeRole } = require('../middlewares/auth');
 const { ROLES } = require('../config/constants');
 
+router.get('/barbers/public', userController.getPublicBarbers);
+router.get('/barbers/:id/profile', userController.getPublicBarberProfile);
+
 /**
  * @route   GET /api/users?page=1&limit=10&role=barber&search=john
  * @desc    Get all users (admin only)

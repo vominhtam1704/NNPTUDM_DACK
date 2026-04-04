@@ -86,18 +86,25 @@ exports.getReservationById = async (req, res) => {
 /**
  * Create Reservation - POST /reservations
  * Customer books appointment - CHECK DOUBLE BOOKING
+ * Supports both single service (serviceId) and multiple services (serviceIds array)
  */
 exports.createReservation = async (req, res) => {
   try {
-    const { barberId, serviceId, appointmentDate, appointmentTime, notes } = req.body;
+    const { barberId, serviceId, serviceIds, appointmentDate, appointmentTime, notes, totalPrice } = req.body;
     const customerId = req.user.userId; // From JWT token
 
     // ===== VALIDATION =====
-    if (!barberId || !serviceId || !appointmentDate || !appointmentTime) {
+    const hasMultipleServices = serviceIds && Array.isArray(serviceIds) && serviceIds.length > 0;
+    const hasSingleService = serviceId;
+
+    if (!barberId || !appointmentDate || !appointmentTime || (!hasSingleService && !hasMultipleServices)) {
       return res.status(400).json(
-        formatError('Missing required fields: barberId, serviceId, appointmentDate, appointmentTime')
+        formatError('Missing required fields: barberId, appointmentDate, appointmentTime, and either serviceId or serviceIds')
       );
     }
+
+    // Use serviceIds if provided, otherwise use single serviceId
+    const serviceIdsToUse = hasMultipleServices ? serviceIds : [serviceId];
 
     // Validate barber exists
     const barber = await User.findById(barberId);
@@ -107,13 +114,23 @@ exports.createReservation = async (req, res) => {
       );
     }
 
-    // Validate service exists
-    const service = await Product.findById(serviceId);
-    if (!service) {
-      return res.status(404).json(
-        formatError('Service not found')
-      );
+    // Validate all services exist and calculate total price
+    let calculatedTotalPrice = 0;
+    const services = [];
+
+    for (const sid of serviceIdsToUse) {
+      const service = await Product.findById(sid);
+      if (!service) {
+        return res.status(404).json(
+          formatError(`Service ${sid} not found`)
+        );
+      }
+      services.push(service);
+      calculatedTotalPrice += service.price;
     }
+
+    // Override with provided totalPrice if service count > 1 (for discounts) or use calculated
+    const finalTotalPrice = hasMultipleServices && totalPrice ? totalPrice : calculatedTotalPrice;
 
     // ===== CHECK DOUBLE BOOKING (CRITICAL) =====
     // Make sure no other reservation exists for this barber at this time
@@ -135,13 +152,14 @@ exports.createReservation = async (req, res) => {
     }
 
     // ===== CREATE RESERVATION =====
+    // For single service use serviceId, for multiple include in notes
     const newReservation = new Reservation({
       barberId,
       customerId,
-      serviceId,
+      serviceId: serviceIdsToUse[0], // Always store first service as primary
       appointmentDate: appointmentDateTime,
       appointmentTime,
-      totalPrice: service.price,
+      totalPrice: finalTotalPrice,
       notes: notes || '',
       status: APPOINTMENT_STATUS.PENDING
     });

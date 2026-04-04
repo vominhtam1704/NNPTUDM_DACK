@@ -15,7 +15,9 @@ app.use(helmet());
 
 // CORS configuration
 app.use(cors({
-  origin: process.env.CORS_ORIGIN || 'http://localhost:3000',
+  origin: process.env.NODE_ENV === 'production'
+    ? process.env.CORS_ORIGIN || 'http://localhost:3000'
+    : ['http://localhost:3000', 'http://localhost:3001'],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
@@ -53,6 +55,7 @@ const cartRoutes = require('./routes/carts');
 const messageRoutes = require('./routes/messages');
 const reviewRoutes = require('./routes/reviews');
 const inventoryRoutes = require('./routes/inventory');
+const analyticsRoutes = require('./routes/analytics');
 // const uploadRoutes = require('./routes/uploads');
 
 // Register routes
@@ -67,6 +70,7 @@ app.use('/api/carts', cartRoutes);
 app.use('/api/messages', messageRoutes);
 app.use('/api/reviews', reviewRoutes);
 app.use('/api/inventory', inventoryRoutes);
+app.use('/api/analytics', analyticsRoutes);
 // app.use('/api/uploads', uploadRoutes);
 
 // ========== ERROR HANDLER ==========

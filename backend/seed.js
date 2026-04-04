@@ -7,8 +7,11 @@ const Role = require('./src/models/Role');
 const User = require('./src/models/User');
 const Category = require('./src/models/Category');
 const Product = require('./src/models/Product');
+const Reservation = require('./src/models/Reservation');
+const Review = require('./src/models/Review');
+const Payment = require('./src/models/Payment');
 const { hashPassword } = require('./src/utils/password');
-const { ROLES } = require('./src/config/constants');
+const { ROLES, APPOINTMENT_STATUS, PAYMENT_STATUS, PAYMENT_METHOD } = require('./src/config/constants');
 
 const connectDB = async () => {
   try {
@@ -202,41 +205,264 @@ const seedProducts = async () => {
       return;
     }
 
-    const cutCategory = await Category.findOne({ name: 'Cat toc nam' });
-
-    if (!cutCategory) {
-      console.log('[SKIP] Category not found - skipping products');
-      return;
-    }
+    // Get categories
+    const maleCategory = await Category.findOne({ slug: 'cat-toc-nam' });
+    const femaleCategory = await Category.findOne({ slug: 'cat-toc-nu' });
+    const colorCategory = await Category.findOne({ slug: 'nhuom-toc' });
+    const careCategory = await Category.findOne({ slug: 'duong-toc' });
 
     const products = [
+      // Male haircuts
       {
-        name: 'Cat toc thuong',
-        description: 'Cat toc co ban',
+        name: 'Cat toc nam thuong',
+        description: 'Cat toc co ban cho nam - duong kinh dien',
         price: 50000,
         duration: 30,
-        categoryId: cutCategory._id
+        categoryId: maleCategory._id,
+        isActive: true
       },
       {
-        name: 'Cat toc + Goi dau',
-        description: 'Cat toc + goi dau premium',
+        name: 'Cat toc nam + Goi dau',
+        description: 'Cat toc + goi dau premium cho nam',
         price: 80000,
         duration: 45,
-        categoryId: cutCategory._id
+        categoryId: maleCategory._id,
+        isActive: true
       },
       {
-        name: 'Cat toc + Nhuom',
-        description: 'Cat toc + nhuom mau',
+        name: 'Cat toc nam + Goi dau + Massage',
+        description: 'Goi dich vu hoan hao cho nam',
+        price: 120000,
+        duration: 60,
+        categoryId: maleCategory._id,
+        isActive: true
+      },
+      {
+        name: 'Cat toc ky thuat',
+        description: 'Cat toc ky thuat cao cap',
+        price: 100000,
+        duration: 45,
+        categoryId: maleCategory._id,
+        isActive: true
+      },
+
+      // Female haircuts
+      {
+        name: 'Cat toc nu cua',
+        description: 'Cat toc cua phom hay cho nu',
+        price: 80000,
+        duration: 45,
+        categoryId: femaleCategory._id,
+        isActive: true
+      },
+      {
+        name: 'Cat + Uon toc nu',
+        description: 'Cat + uon toc cao cap',
         price: 150000,
         duration: 90,
-        categoryId: cutCategory._id
+        categoryId: femaleCategory._id,
+        isActive: true
+      },
+      {
+        name: 'Cat + Goi dau + Sap',
+        description: 'Cham soc toc nu toan dien',
+        price: 120000,
+        duration: 60,
+        categoryId: femaleCategory._id,
+        isActive: true
+      },
+
+      // Hair coloring
+      {
+        name: 'Nhuom toc mau don',
+        description: 'Nhuom toc mot mau',
+        price: 200000,
+        duration: 90,
+        categoryId: colorCategory._id,
+        isActive: true
+      },
+      {
+        name: 'Nhuom toc mau duo',
+        description: 'Nhuom toc hai mau - tao dieu',
+        price: 280000,
+        duration: 120,
+        categoryId: colorCategory._id,
+        isActive: true
+      },
+      {
+        name: 'Nhuom toc highlights',
+        description: 'Nhuom toc highlights sang trong',
+        price: 250000,
+        duration: 120,
+        categoryId: colorCategory._id,
+        isActive: true
+      },
+
+      // Hair care services
+      {
+        name: 'Duong toc tre hoa',
+        description: 'Duong toc tre hoa voi serum cao cap',
+        price: 180000,
+        duration: 60,
+        categoryId: careCategory._id,
+        isActive: true
+      },
+      {
+        name: 'Duong toc phuc hoi',
+        description: 'Duong toc phuc hoi toc hong',
+        price: 150000,
+        duration: 45,
+        categoryId: careCategory._id,
+        isActive: true
+      },
+      {
+        name: 'Spa toc sang tron',
+        description: 'Spa toc sang tron toan dien',
+        price: 220000,
+        duration: 90,
+        categoryId: careCategory._id,
+        isActive: true
       }
     ];
 
     await Product.insertMany(products);
-    console.log('[SUCCESS] Created ' + products.length + ' sample products');
+    console.log('[SUCCESS] Created ' + products.length + ' sample products/services');
   } catch (error) {
     console.error('[ERROR] Error seeding products:', error.message);
+  }
+};
+
+const seedReservations = async () => {
+  try {
+    const existingReservations = await Reservation.countDocuments();
+    if (existingReservations > 0) {
+      console.log('[SKIP] Reservations already exist - skipping');
+      return;
+    }
+
+    const barbers = await User.find({ role: 'barber' }).limit(3);
+    const customers = await User.find({ role: 'customer' }).limit(3);
+    const products = await Product.find().limit(5);
+
+    if (barbers.length === 0 || customers.length === 0 || products.length === 0) {
+      console.log('[SKIP] Not enough barbers/customers/products for reservations');
+      return;
+    }
+
+    const reservations = [];
+    const today = new Date();
+
+    // Create reservations for next 30 days
+    for (let i = 0; i < 12; i++) {
+      const appointmentDate = new Date(today);
+      appointmentDate.setDate(appointmentDate.getDate() + Math.floor(i / 3) + 1);
+
+      const statuses = [APPOINTMENT_STATUS.PENDING, APPOINTMENT_STATUS.CONFIRMED, APPOINTMENT_STATUS.DONE];
+      const timeSlots = ['08:00', '09:00', '10:00', '11:00', '13:00', '14:00', '15:00', '16:00', '17:00'];
+
+      reservations.push({
+        customerId: customers[i % customers.length]._id,
+        barberId: barbers[i % barbers.length]._id,
+        serviceId: products[i % products.length]._id,
+        appointmentDate: appointmentDate,
+        appointmentTime: timeSlots[i % timeSlots.length],
+        status: statuses[i % statuses.length],
+        totalPrice: products[i % products.length].price,
+        notes: `Dat lich tu he thong - ${['Muon cat toc duong kinh', 'Muon uon toc', 'Muon nhuom toc', 'Duong toc'][i % 4]}`
+      });
+    }
+
+    await Reservation.insertMany(reservations);
+    console.log('[SUCCESS] Created ' + reservations.length + ' sample reservations');
+  } catch (error) {
+    console.error('[ERROR] Error seeding reservations:', error.message);
+  }
+};
+
+const seedReviews = async () => {
+  try {
+    const existingReviews = await Review.countDocuments();
+    if (existingReviews > 0) {
+      console.log('[SKIP] Reviews already exist - skipping');
+      return;
+    }
+
+    const completedReservations = await Reservation.find({ status: APPOINTMENT_STATUS.DONE }).limit(5);
+
+    if (completedReservations.length === 0) {
+      console.log('[SKIP] No completed reservations for reviews');
+      return;
+    }
+
+    const reviews = [];
+    const comments = [
+      'Tao toc rat dep, thanh thao va chat luong dung danh gia',
+      'Dich vu tot, o clean va nhan vien than thien',
+      'Gia hoi hop, ket qua rat y man',
+      'Khong gop y chi, se quay lai thoi',
+      'Nhan vien cua hang rat chuyen nghiep va kinh nghiem'
+    ];
+
+    for (let i = 0; i < completedReservations.length; i++) {
+      const reservation = completedReservations[i];
+      reviews.push({
+        customerId: reservation.customerId,
+        barberId: reservation.barberId,
+        productId: reservation.serviceId,
+        reservationId: reservation._id,
+        rating: [4.5, 5, 4, 4.5, 5][i % 5],
+        comment: comments[i % comments.length],
+        images: []
+      });
+    }
+
+    await Review.insertMany(reviews);
+    console.log('[SUCCESS] Created ' + reviews.length + ' sample reviews');
+  } catch (error) {
+    console.error('[ERROR] Error seeding reviews:', error.message);
+  }
+};
+
+const seedPayments = async () => {
+  try {
+    const existingPayments = await Payment.countDocuments();
+    if (existingPayments > 0) {
+      console.log('[SKIP] Payments already exist - skipping');
+      return;
+    }
+
+    const reservations = await Reservation.find().limit(8);
+
+    if (reservations.length === 0) {
+      console.log('[SKIP] No reservations for payments');
+      return;
+    }
+
+    const payments = [];
+    const methods = [PAYMENT_METHOD.CASH, PAYMENT_METHOD.TRANSFER, PAYMENT_METHOD.QR];
+    const statuses = [PAYMENT_STATUS.PAID, PAYMENT_STATUS.PENDING, PAYMENT_STATUS.PAID];
+
+    for (let i = 0; i < reservations.length; i++) {
+      const reservation = reservations[i];
+      const refCode = 'PAY' + Date.now() + '_' + i;
+      const transactionId = ['', 'SEPAY_' + Math.random().toString(36).substr(2, 10), ''][i % 3];
+
+      payments.push({
+        reservationId: reservation._id,
+        customerId: reservation.customerId,
+        referenceCode: refCode,
+        amount: reservation.totalPrice,
+        method: methods[i % methods.length],
+        status: statuses[i % statuses.length],
+        transactionId: transactionId || undefined,
+        paidAt: [new Date(), null, new Date()][i % 3]
+      });
+    }
+
+    await Payment.insertMany(payments);
+    console.log('[SUCCESS] Created ' + payments.length + ' sample payments');
+  } catch (error) {
+    console.error('[ERROR] Error seeding payments:', error.message);
   }
 };
 
@@ -244,18 +470,29 @@ const seed = async () => {
   try {
     await connectDB();
 
-    console.log('[INFO] SEEDING DATABASE...');
+    console.log('[INFO] ==========================================');
+    console.log('[INFO]   STARTING DATABASE SEEDING...');
+    console.log('[INFO] ==========================================\n');
 
     await seedRoles();
     await seedAdminUser();
     await seedSampleBarbersAndCustomers();
     await seedCategories();
     await seedProducts();
+    await seedReservations();
+    await seedReviews();
+    await seedPayments();
 
+    console.log('\n[INFO] ==========================================');
     console.log('[SUCCESS] DATABASE SEEDING COMPLETED!');
+    console.log('[INFO] ==========================================\n');
+    console.log('[INFO] Dang nhap test:');
+    console.log('  Admin:    admin@barber.com / Admin@123456');
+    console.log('  Barber:   barber1@barber.com / User@123456');
+    console.log('  Customer: customer1@email.com / User@123456\n');
 
     await mongoose.connection.close();
-    console.log('[INFO] MongoDB disconnected');
+    console.log('[INFO] MongoDB disconnected\n');
     process.exit(0);
   } catch (error) {
     console.error('[ERROR] Seeding failed:', error);
