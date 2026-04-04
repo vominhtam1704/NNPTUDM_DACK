@@ -51,13 +51,13 @@ $spacing-2xl: 3rem;
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background-color: var(--bg-light);
   color: var(--text-dark);
+  font-size: 1rem;
+  line-height: 1.6;
 }
 
 html {
@@ -66,7 +66,8 @@ html {
 
 // ===== TYPOGRAPHY =====
 h1, h2, h3, h4, h5, h6 {
-  font-weight: 600;
+  font-family: 'Manrope', sans-serif;
+  font-weight: 700;
   line-height: 1.2;
   margin-bottom: $spacing-md;
 }
@@ -84,7 +85,12 @@ h3 {
   font-size: 1.5rem;
 }
 
+h4 {
+  font-size: 1.25rem;
+}
+
 p {
+  font-family: 'Inter', sans-serif;
   line-height: 1.6;
   margin-bottom: $spacing-md;
 }
@@ -137,7 +143,7 @@ a {
   color: #fff;
 
   &:hover {
-    background-color: darken(#5d5f5f, 10%);
+    background-color: #4a4c4c;
   }
 }
 
@@ -146,7 +152,7 @@ a {
   color: #fff;
 
   &:hover {
-    background-color: darken(#EF4444, 10%);
+    background-color: #d63f3f;
   }
 }
 
