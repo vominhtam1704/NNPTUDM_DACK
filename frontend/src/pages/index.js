@@ -16,3 +16,4 @@ export { default as BookingCompletePage } from './stubs/BookingCompletePage';
 export { default as ReviewBarberPage } from './stubs/ReviewBarberPage';
 export { default as ProfilePage } from './stubs/ProfilePage';
 export { default as AdminDashboardPage } from './stubs/AdminDashboardPage';
+export { default as BarberDashboardPage } from './stubs/BarberDashboardPage';

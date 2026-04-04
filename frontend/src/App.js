@@ -20,11 +20,30 @@ import {
   ReviewBarberPage,
   ProfilePage,
   AdminDashboardPage,
+  BarberDashboardPage,
 } from './pages';
 
 // Components
 import ProtectedRoute from './components/ProtectedRoute';
 import { AuthProvider } from './context/AuthContext';
+import { useAuth } from './hooks/useAuth';
+
+// Helper component for root route redirection
+const RootRedirect = () => {
+  const { isAuthenticated, user, isLoading } = useAuth();
+
+  if (isLoading) return <div className="loading-screen">Loading...</div>;
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+
+  // Role-based redirection for authenticated users
+  if (user?.role === 'admin') return <Navigate to="/admin" replace />;
+  if (user?.role === 'barber') return <Navigate to="/barber" replace />;
+  
+  return <Navigate to="/account" replace />;
+};
 
 function App() {
   return (
@@ -32,10 +51,11 @@ function App() {
       <Router>
         <Routes>
         {/* Public Routes */}
-        <Route path="/" element={<HomePage />} />
+        <Route path="/" element={<RootRedirect />} />
         <Route path="/barbers/:barberId" element={<BarberProfilePage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
+        <Route path="/home" element={<HomePage />} />
 
         {/* Protected Routes */}
         <Route 
@@ -117,6 +137,14 @@ function App() {
               <AdminDashboardPage />
             </ProtectedRoute>
           } 
+        />
+        <Route
+          path="/barber"
+          element={
+            <ProtectedRoute requiredRole="barber">
+              <BarberDashboardPage />
+            </ProtectedRoute>
+          }
         />
 
         {/* Fallback */}

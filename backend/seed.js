@@ -10,6 +10,7 @@ const Product = require('./src/models/Product');
 const Reservation = require('./src/models/Reservation');
 const Review = require('./src/models/Review');
 const Payment = require('./src/models/Payment');
+const Inventory = require('./src/models/Inventory');
 const { hashPassword } = require('./src/utils/password');
 const { ROLES, APPOINTMENT_STATUS, PAYMENT_STATUS, PAYMENT_METHOD } = require('./src/config/constants');
 
@@ -352,23 +353,26 @@ const seedReservations = async () => {
     const reservations = [];
     const today = new Date();
 
-    // Create reservations for next 30 days
-    for (let i = 0; i < 12; i++) {
+    // Create reservations from -30 days to +30 days
+    for (let i = -15; i < 15; i++) {
       const appointmentDate = new Date(today);
-      appointmentDate.setDate(appointmentDate.getDate() + Math.floor(i / 3) + 1);
+      appointmentDate.setDate(today.getDate() + i);
 
-      const statuses = [APPOINTMENT_STATUS.PENDING, APPOINTMENT_STATUS.CONFIRMED, APPOINTMENT_STATUS.DONE];
+      const statuses = [APPOINTMENT_STATUS.DONE, APPOINTMENT_STATUS.CONFIRMED, APPOINTMENT_STATUS.PENDING];
+      // Past dates are usually DONE, future are PENDING/CONFIRMED
+      const status = i < 0 ? APPOINTMENT_STATUS.DONE : statuses[Math.abs(i) % 3];
+
       const timeSlots = ['08:00', '09:00', '10:00', '11:00', '13:00', '14:00', '15:00', '16:00', '17:00'];
 
       reservations.push({
-        customerId: customers[i % customers.length]._id,
-        barberId: barbers[i % barbers.length]._id,
-        serviceId: products[i % products.length]._id,
+        customerId: customers[Math.abs(i) % customers.length]._id,
+        barberId: barbers[Math.abs(i) % barbers.length]._id,
+        serviceId: products[Math.abs(i) % products.length]._id,
         appointmentDate: appointmentDate,
-        appointmentTime: timeSlots[i % timeSlots.length],
-        status: statuses[i % statuses.length],
-        totalPrice: products[i % products.length].price,
-        notes: `Dat lich tu he thong - ${['Muon cat toc duong kinh', 'Muon uon toc', 'Muon nhuom toc', 'Duong toc'][i % 4]}`
+        appointmentTime: timeSlots[Math.abs(i) % timeSlots.length],
+        status: status,
+        totalPrice: products[Math.abs(i) % products.length].price,
+        notes: `Du lieu mau - ${['Cat toc le', 'Uon toc', 'Nhuom toc', 'Combo VIP'][Math.abs(i) % 4]}`
       });
     }
 
@@ -466,6 +470,32 @@ const seedPayments = async () => {
   }
 };
 
+const seedInventory = async () => {
+  try {
+    const existing = await Inventory.countDocuments();
+    if (existing > 0) {
+      console.log('[SKIP] Inventory already exists');
+      return;
+    }
+
+    const items = [
+      { name: 'Gôm xịt tóc Silhouette', sku: 'GOM-001', quantity: 45, unit: 'chai', minStock: 10, supplier: 'Schwarzkopf', purchasePrice: 120000 },
+      { name: 'Sáp Pomade Reuzel Blue', sku: 'SAP-002', quantity: 28, unit: 'hộp', minStock: 15, supplier: 'Reuzel', purchasePrice: 350000 },
+      { name: 'Tinh dầu dưỡng Moroccanoil', sku: 'OIL-003', quantity: 4, unit: 'chai', minStock: 10, supplier: 'Moroccanoil', purchasePrice: 850000 },
+      { name: 'Bột tạo phồng Uppercut', sku: 'BOT-004', quantity: 12, unit: 'lọ', minStock: 5, supplier: 'Uppercut Deluxe', purchasePrice: 280000 },
+      { name: 'Khăn mặt bông trắng', sku: 'KHA-005', quantity: 120, unit: 'cái', minStock: 30, supplier: 'Det May VN', purchasePrice: 15000 },
+      { name: 'Lưỡi dao cạo lam', sku: 'DAO-006', quantity: 8, unit: 'hộp', minStock: 15, supplier: 'Gillette', purchasePrice: 45000 },
+      { name: 'Dầu gội bưởi Vijully', sku: 'SHA-007', quantity: 18, unit: 'chai', minStock: 10, supplier: 'Vijully', purchasePrice: 180000 },
+      { name: 'Khăn giấy khô Premium', sku: 'PAP-008', quantity: 3, unit: 'gói', minStock: 10, supplier: 'Unicharm', purchasePrice: 25000 }
+    ];
+
+    await Inventory.insertMany(items);
+    console.log('[SUCCESS] Created ' + items.length + ' inventory items (with low stock alerts)');
+  } catch (error) {
+    console.error('[ERROR] Error seeding inventory:', error.message);
+  }
+};
+
 const seed = async () => {
   try {
     await connectDB();
@@ -482,6 +512,7 @@ const seed = async () => {
     await seedReservations();
     await seedReviews();
     await seedPayments();
+    await seedInventory();
 
     console.log('\n[INFO] ==========================================');
     console.log('[SUCCESS] DATABASE SEEDING COMPLETED!');
