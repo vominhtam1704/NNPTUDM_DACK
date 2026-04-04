@@ -1,6 +1,7 @@
 // ============================================
 // MESSAGECONTROLLER.JS - MESSAGE/NOTIFICATION MANAGEMENT
 // ============================================
+const mongoose = require('mongoose');
 const Message = require('../models/Message');
 const { formatSuccess, formatError, formatPaginated } = require('../utils/response');
 
@@ -13,7 +14,8 @@ exports.getMessages = async (req, res) => {
     const { page = 1, limit = 10, type, read } = req.query;
     const skip = (page - 1) * limit;
 
-    const filter = { receiver: req.user.userId };
+    console.log('Fetching messages for user:', req.user.userId);
+    const filter = { receiver: new mongoose.Types.ObjectId(req.user.userId) };
     if (type) filter.type = type;
     if (read !== undefined) filter.isRead = read === 'true';
 

@@ -17,19 +17,19 @@ const reservationSchema = new mongoose.Schema({
     required: [true, 'Barber is required']
   },
   
-  serviceIds: {
-    type: [mongoose.Schema.Types.ObjectId],
+  serviceId: {
+    type: mongoose.Schema.Types.ObjectId,
     ref: 'Product',
-    required: [true, 'At least one service is required']
+    required: [true, 'Service is required']
   },
   
-  date: {
+  appointmentDate: {
     type: Date,
     required: [true, 'Appointment date is required']
   },
   
-  timeSlot: {
-    type: String, // e.g., "09:00-09:30"
+  appointmentTime: {
+    type: String, // e.g., "09:00"
     required: [true, 'Time slot is required']
   },
   
@@ -45,7 +45,7 @@ const reservationSchema = new mongoose.Schema({
     min: [0, 'Price cannot be negative']
   },
   
-  note: String,
+  notes: String,
   
   createdAt: {
     type: Date,
@@ -60,14 +60,14 @@ const reservationSchema = new mongoose.Schema({
 
 // CRITICAL: Unique constraint to prevent double-booking
 reservationSchema.index(
-  { barberId: 1, date: 1, timeSlot: 1 },
+  { barberId: 1, appointmentDate: 1, appointmentTime: 1 },
   { unique: true, sparse: true }
 );
 
 // Indexes for common queries
 reservationSchema.index({ customerId: 1 });
 reservationSchema.index({ status: 1 });
-reservationSchema.index({ date: 1 });
+reservationSchema.index({ appointmentDate: 1 });
 
 reservationSchema.pre('save', function(next) {
   this.updatedAt = Date.now();

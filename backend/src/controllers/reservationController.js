@@ -153,12 +153,19 @@ exports.createReservation = async (req, res) => {
       { path: 'serviceId', select: 'name price duration' }
     ]);
 
-    // ===== CREATE NOTIFICATION =====
+    // ===== CREATE NOTIFICATION FOR BARBER =====
     await Message.create({
       sender: customerId,
       receiver: barberId,
-      subject: 'New appointment booking',
       content: `${newReservation.customerId.name} booked appointment for ${appointmentDate}`,
+      type: 'notification'
+    });
+
+    // ===== CREATE NOTIFICATION FOR CUSTOMER (DUAL NOTIFY) =====
+    await Message.create({
+      sender: barberId,
+      receiver: customerId,
+      content: `Your appointment with ${newReservation.barberId.name} on ${appointmentDate} has been booked!`,
       type: 'notification'
     });
 

@@ -10,7 +10,7 @@ const { formatSuccess, formatError, formatPaginated } = require('../utils/respon
 const { PAYMENT_STATUS, APPOINTMENT_STATUS } = require('../config/constants');
 
 const SEPAY_API = process.env.SEPAY_API || 'https://api.sepay.vn';
-const SEPAY_ACCOUNT = process.env.SEPAY_ACCOUNT;
+const SEPAY_ACCOUNT = process.env.SEPAY_ACCOUNT_NUMBER;
 const SEPAY_BANK_CODE = process.env.SEPAY_BANK_CODE;
 const WEBHOOK_SECRET = process.env.WEBHOOK_SECRET;
 
@@ -118,7 +118,7 @@ exports.createPayment = async (req, res) => {
       customerId,
       amount: reservation.totalPrice,
       status: PAYMENT_STATUS.PENDING,
-      paymentMethod: 'sepay',
+      method: 'qr',
       referenceCode: `ORD-${reservationId}-${Date.now()}`
     });
 
@@ -132,7 +132,7 @@ exports.createPayment = async (req, res) => {
       accountNumber: SEPAY_ACCOUNT,
       bankCode: SEPAY_BANK_CODE,
       description: payment.referenceCode,
-      qrUrl: `https://api.sepay.vn/qr/${SEPAY_ACCOUNT}/${payment.amount}/${payment.referenceCode}`
+      qrUrl: `https://qr.sepay.vn/img?acc=${SEPAY_ACCOUNT}&bank=${SEPAY_BANK_CODE}&amount=${payment.amount}&des=${payment.referenceCode}&template=compact`
     };
 
     payment.qrData = qrData;

@@ -5,13 +5,13 @@ const mongoose = require('mongoose');
 const { MESSAGE_TYPE } = require('../config/constants');
 
 const messageSchema = new mongoose.Schema({
-  senderId: {
+  sender: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     required: true
   },
   
-  receiverId: {
+  receiver: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     required: true
@@ -45,8 +45,8 @@ const messageSchema = new mongoose.Schema({
   }
 });
 
-messageSchema.index({ receiverId: 1, isRead: 1 });
-messageSchema.index({ senderId: 1 });
+messageSchema.index({ receiver: 1, isRead: 1 });
+messageSchema.index({ sender: 1 });
 messageSchema.index({ reservationId: 1 });
 
 module.exports = mongoose.model('Message', messageSchema);

@@ -16,7 +16,7 @@ exports.getAllInventory = async (req, res) => {
     const filter = {};
     if (search) {
       filter.$or = [
-        { productName: { $regex: search, $options: 'i' } },
+        { name: { $regex: search, $options: 'i' } },
         { sku: { $regex: search, $options: 'i' } }
       ];
     }
@@ -71,9 +71,9 @@ exports.getInventoryById = async (req, res) => {
  */
 exports.createInventoryItem = async (req, res) => {
   try {
-    const { productName, sku, quantity, minStock, price, supplier } = req.body;
+    const { name, sku, quantity, minStock, purchasePrice, unit, supplier } = req.body;
 
-    if (!productName || !sku || quantity === undefined || minStock === undefined) {
+    if (!name || !sku || quantity === undefined || minStock === undefined) {
       return res.status(400).json(
         formatError('Missing required fields')
       );
@@ -87,11 +87,12 @@ exports.createInventoryItem = async (req, res) => {
     }
 
     const inventory = new Inventory({
-      productName,
+      name,
       sku,
       quantity: parseInt(quantity),
       minStock: parseInt(minStock),
-      price: parseFloat(price) || 0,
+      purchasePrice: parseFloat(purchasePrice) || 0,
+      unit: unit || 'piece',
       supplier: supplier || ''
     });
 
@@ -113,13 +114,14 @@ exports.createInventoryItem = async (req, res) => {
  */
 exports.updateInventoryItem = async (req, res) => {
   try {
-    const { productName, quantity, minStock, price, supplier } = req.body;
+    const { name, quantity, minStock, purchasePrice, unit, supplier } = req.body;
 
     const updateData = {};
-    if (productName) updateData.productName = productName;
+    if (name) updateData.name = name;
     if (quantity !== undefined) updateData.quantity = parseInt(quantity);
     if (minStock !== undefined) updateData.minStock = parseInt(minStock);
-    if (price !== undefined) updateData.price = parseFloat(price);
+    if (purchasePrice !== undefined) updateData.purchasePrice = parseFloat(purchasePrice);
+    if (unit) updateData.unit = unit;
     if (supplier) updateData.supplier = supplier;
 
     const inventory = await Inventory.findByIdAndUpdate(

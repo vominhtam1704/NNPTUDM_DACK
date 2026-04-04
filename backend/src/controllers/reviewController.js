@@ -12,11 +12,11 @@ const { ROLES } = require('../config/constants');
  */
 exports.getAllReviews = async (req, res) => {
   try {
-    const { page = 1, limit = 10, serviceId, barberId, minRating } = req.query;
+    const { page = 1, limit = 10, productId, barberId, minRating } = req.query;
     const skip = (page - 1) * limit;
 
     const filter = {};
-    if (serviceId) filter.serviceId = serviceId;
+    if (productId) filter.productId = productId;
     if (barberId) filter.barberId = barberId;
     if (minRating) filter.rating = { $gte: parseInt(minRating) };
 
@@ -110,6 +110,7 @@ exports.createReview = async (req, res) => {
       reservationId,
       customerId,
       barberId: reservation.barberId,
+      productId: reservation.serviceId,
       rating,
       comment: comment || '',
       images: images || []

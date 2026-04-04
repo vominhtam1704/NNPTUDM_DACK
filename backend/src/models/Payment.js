@@ -12,6 +12,18 @@ const paymentSchema = new mongoose.Schema({
     unique: true
   },
   
+  customerId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: [true, 'Customer is required']
+  },
+  
+  referenceCode: {
+    type: String,
+    required: [true, 'Reference code is required'],
+    unique: true
+  },
+  
   amount: {
     type: Number,
     required: [true, 'Amount is required'],
