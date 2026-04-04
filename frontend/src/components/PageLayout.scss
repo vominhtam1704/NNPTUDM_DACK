@@ -2,24 +2,34 @@
   display: flex;
   min-height: 100vh;
   background: #f7f9ff;
+  width: 100%;
+
+  .page-layout-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    margin-left: 16rem; /* Standard Sidebar width */
+    min-width: 0;
+  }
 
   .page-layout-content {
     flex: 1;
-    margin-left: 16rem;
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
+    padding-top: 5rem; /* Space for fixed GlobalTopbar */
+    width: 100%;
+    min-height: calc(100vh - 5rem);
   }
 }
 
 /* Responsive Design */
 @media (max-width: 767px) {
   .page-layout {
-    flex-direction: column;
+    .page-layout-main {
+      margin-left: 0;
+      padding-bottom: 5.5rem; /* Space for MobileNav */
+    }
 
     .page-layout-content {
-      margin-left: 0;
-      margin-bottom: 60px; /* Space for bottom navigation */
+      padding-top: 4.5rem; /* Mobile topbar height */
     }
   }
 }

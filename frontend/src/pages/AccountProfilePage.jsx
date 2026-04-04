@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { getMyReservations, cancelReservation } from '../services/reservations';
@@ -43,8 +43,9 @@ const statusAccents = {
 };
 
 function AccountProfilePage() {
-  const { user, updateProfile, isLoading: authIsLoading } = useAuth();
+  const { user, updateProfile, uploadAvatar, isLoading: authIsLoading } = useAuth();
   const navigate = useNavigate();
+  const fileInputRef = useRef(null);
   const [formData, setFormData] = useState({
     name: '',
     phone: '',
@@ -57,6 +58,55 @@ function AccountProfilePage() {
   const [appointments, setAppointments] = useState([]);
   const [appointmentsLoading, setAppointmentsLoading] = useState(true);
   const [appointmentsError, setAppointmentsError] = useState('');
+  const [showAvatarMenu, setShowAvatarMenu] = useState(false);
+  const [showFullScreenAvatar, setShowFullScreenAvatar] = useState(false);
+
+  const handleAvatarClick = () => {
+    setShowAvatarMenu(!showAvatarMenu);
+  };
+
+  const handleEditAvatar = () => {
+    setShowAvatarMenu(false);
+    fileInputRef.current?.click();
+  };
+
+  const handleViewAvatar = () => {
+    setShowAvatarMenu(false);
+    setShowFullScreenAvatar(true);
+  };
+
+  const handleAvatarChange = async (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // File type validation
+    if (!file.type.startsWith('image/')) {
+      setError('Vui lòng chọn một tệp hình ảnh.');
+      return;
+    }
+
+    // File size validation (5MB max)
+    const maxSize = 5 * 1024 * 1024;
+    if (file.size > maxSize) {
+      setError('Dung lượng ảnh quá lớn (tối đa 5MB).');
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('avatar', file);
+
+    setMessage('');
+    setError('');
+
+    const result = await uploadAvatar(formData);
+    if (result.success) {
+      setMessage('Ảnh đại diện đã được cập nhật thành công.');
+    } else {
+      setError(result.message || 'Không thể tải ảnh đại diện lên.');
+    }
+  };
+
+  const closeModal = () => setShowFullScreenAvatar(false);
 
   useEffect(() => {
     if (!user) return;
@@ -77,9 +127,10 @@ function AccountProfilePage() {
       setAppointmentsError('');
 
       try {
-        const data = await getMyReservations({ limit: 5 });
+        const response = await getMyReservations({ limit: 5 });
         if (active) {
-          setAppointments(Array.isArray(data) ? data : data.data || []);
+          const appointmentList = Array.isArray(response) ? response : response?.data || response?.result || [];
+          setAppointments(appointmentList);
         }
       } catch (err) {
         if (active) {
@@ -141,8 +192,9 @@ function AccountProfilePage() {
       await cancelReservation(appointmentId, { reason: 'Huy boi khach hang' });
       setMessage('Lich hen da duoc huy thanh cong');
       // Reload appointments
-      const data = await getMyReservations({ limit: 5 });
-      setAppointments(Array.isArray(data) ? data : data.data || []);
+      const response = await getMyReservations({ limit: 5 });
+      const appointmentList = Array.isArray(response) ? response : response?.data || response?.result || [];
+      setAppointments(appointmentList);
     } catch (err) {
       setError('Khong the huy lich hen: ' + (err.message || 'Co loi xay ra'));
     }
@@ -180,29 +232,16 @@ function AccountProfilePage() {
     }
   };
 
+  const getAvatarUrl = (path) => {
+    if (!path) return fallbackAvatar;
+    if (path.startsWith('http')) return path;
+    const baseUrl = 'http://localhost:5000';
+    return `${baseUrl}${path.startsWith('/') ? '' : '/'}${path}`;
+  };
+
   return (
     <PageLayout>
       <div className="account-page">
-        <nav className="account-topbar">
-          <div className="account-topbar-brand">Cat Toc Pro</div>
-          <div className="account-topbar-links">
-            <Link to="/profile">Lich Hen</Link>
-            <Link to="/">Khach Hang</Link>
-            <Link to="/admin">Bao Cao</Link>
-          </div>
-          <div className="account-topbar-actions">
-            <button type="button">
-              <span className="material-symbols-outlined">notifications</span>
-            </button>
-            <button type="button">
-              <span className="material-symbols-outlined">settings</span>
-            </button>
-            <div className="account-mini-avatar">
-              <img alt={user?.name || 'Avatar'} src={user?.avatar || fallbackAvatar} />
-            </div>
-          </div>
-        </nav>
-
         <main className="account-shell">
           <div className="account-grid">
             <section className="account-sidebar">
@@ -210,12 +249,30 @@ function AccountProfilePage() {
               <div className="identity-accent" />
               <div className="identity-inner">
                 <div className="identity-avatar-wrap">
-                  <div className="identity-avatar-ring">
-                    <img alt={user?.name || 'Avatar'} src={user?.avatar || fallbackAvatar} />
+                  <div className="identity-avatar-ring" onClick={handleAvatarClick} title="Nhấn để xem tùy chọn">
+                    <img alt={user?.name || 'Avatar'} src={getAvatarUrl(user?.avatar)} />
                   </div>
-                  <button className="identity-edit-btn" type="button">
-                    <span className="material-symbols-outlined">edit</span>
-                  </button>
+                  
+                  {showAvatarMenu && (
+                    <div className="avatar-actions-menu">
+                      <button onClick={handleViewAvatar} type="button">
+                        <span className="material-symbols-outlined">visibility</span>
+                        Xem ảnh
+                      </button>
+                      <button onClick={handleEditAvatar} type="button">
+                        <span className="material-symbols-outlined">photo_camera</span>
+                        Sửa ảnh
+                      </button>
+                    </div>
+                  )}
+
+                  <input
+                    accept="image/*"
+                    onChange={handleAvatarChange}
+                    ref={fileInputRef}
+                    style={{ display: 'none' }}
+                    type="file"
+                  />
                 </div>
 
                 <h1>{user?.name || 'Khach hang'}</h1>
@@ -397,27 +454,21 @@ function AccountProfilePage() {
               </form>
             </div>
           </section>
+          
+          {showFullScreenAvatar && (
+            <div className="avatar-fullscreen-modal" onClick={closeModal}>
+              <button className="modal-close-btn" onClick={closeModal}>
+                <span className="material-symbols-outlined">close</span>
+              </button>
+              <img 
+                alt="Avatar Full Screen" 
+                onClick={(e) => e.stopPropagation()} 
+                src={getAvatarUrl(user?.avatar)} 
+              />
+            </div>
+          )}
         </div>
         </main>
-
-        <div className="account-bottom-nav">
-        <Link to="/">
-          <span className="material-symbols-outlined">dashboard</span>
-          <span>Trang chu</span>
-        </Link>
-        <Link to="/profile">
-          <span className="material-symbols-outlined">calendar_today</span>
-          <span>Lich hen</span>
-        </Link>
-        <Link className="active" to="/account">
-          <span className="material-symbols-outlined filled">person</span>
-          <span>Ho so</span>
-        </Link>
-        <Link to="/account">
-          <span className="material-symbols-outlined">settings</span>
-          <span>Cai dat</span>
-        </Link>
-        </div>
       </div>
     </PageLayout>
   );

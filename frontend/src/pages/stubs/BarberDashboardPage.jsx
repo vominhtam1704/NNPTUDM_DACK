@@ -4,6 +4,7 @@
 // ============================================
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { getMyReservations, confirmReservation, updateReservation } from '../../services/reservations';
+import PageLayout from '../../components/PageLayout';
 import '../BarberDashboardPage.scss';
 
 const STATUS_LABEL = {
@@ -59,10 +60,6 @@ function BarberDashboardPage() {
   const [activeTab, setActiveTab] = useState('today');
   const [actionLoading, setActionLoading] = useState('');
 
-  const user = useMemo(() => {
-    try { return JSON.parse(localStorage.getItem('user') || '{}'); }
-    catch { return {}; }
-  }, []);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -131,18 +128,11 @@ function BarberDashboardPage() {
     }
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken');
-    localStorage.removeItem('user');
-    window.location.href = '/login';
-  };
 
   // Stats summary
   const totalToday = todayBookings.length;
   const completedToday = todayBookings.filter((r) => r.status === 'completed').length;
   const pendingTotal = allBookings.filter((r) => r.status === 'pending').length;
-  const totalAll = allBookings.length;
 
   const TABS = [
     { key: 'today', label: `Hôm nay (${totalToday})` },
@@ -190,78 +180,47 @@ function BarberDashboardPage() {
   );
 
   return (
-    <div className="barber-dashboard">
-      {/* Sidebar */}
-      <aside className="bd-sidebar">
-        <div className="bd-brand">
-          <div className="bd-brand-mark">BA</div>
-          <div>
-            <span className="bd-brand-name">Barber Atelier</span>
-            <span className="bd-brand-sub">Thợ cắt tóc</span>
+    <PageLayout>
+      <div className="barber-dashboard-unified">
+        <header className="bd-header">
+          <div className="header-titles">
+            <h1>Quản lý lịch hẹn</h1>
+            <p className="sub-text">{formatDate(new Date())}</p>
           </div>
-        </div>
+          
+          <div className="bd-stats-row">
+            <div className="mini-stat">
+              <span className="label">Hôm nay</span>
+              <strong className="value">{totalToday}</strong>
+            </div>
+            <div className="mini-stat">
+              <span className="label">Đã xong</span>
+              <strong className="value">{completedToday}</strong>
+            </div>
+            <div className="mini-stat">
+              <span className="label">Chờ duyệt</span>
+              <strong className="value pending">{pendingTotal}</strong>
+            </div>
+          </div>
 
-        <div className="bd-barber-card">
-          <div className="bd-avatar">{(user.name || 'B')[0].toUpperCase()}</div>
-          <div>
-            <p className="bd-barber-name">{user.name || 'Thợ cắt tóc'}</p>
-            <p className="bd-barber-role">Barber</p>
-          </div>
-        </div>
-
-        <div className="bd-summary-stats">
-          <div className="bd-stat">
-            <span className="bd-stat-val">{totalToday}</span>
-            <span className="bd-stat-lbl">Lịch hôm nay</span>
-          </div>
-          <div className="bd-stat">
-            <span className="bd-stat-val">{completedToday}</span>
-            <span className="bd-stat-lbl">Đã xong hôm nay</span>
-          </div>
-          <div className="bd-stat">
-            <span className="bd-stat-val">{pendingTotal}</span>
-            <span className="bd-stat-lbl">Chờ xác nhận</span>
-          </div>
-          <div className="bd-stat">
-            <span className="bd-stat-val">{totalAll}</span>
-            <span className="bd-stat-lbl">Tổng lịch hẹn</span>
-          </div>
-        </div>
-
-        <nav className="bd-nav">
-          {TABS.map((tab) => (
-            <button
-              className={`bd-nav-item${activeTab === tab.key ? ' active' : ''}`}
-              key={tab.key}
-              onClick={() => setActiveTab(tab.key)}
-              type="button"
-            >
-              {tab.label}
+          <div className="bd-tab-nav">
+            {TABS.map((tab) => (
+              <button
+                className={`bd-tab-item${activeTab === tab.key ? ' active' : ''}`}
+                key={tab.key}
+                onClick={() => setActiveTab(tab.key)}
+                type="button"
+              >
+                {tab.label}
+              </button>
+            ))}
+            <button className="bd-refresh-btn" onClick={load} type="button">
+              <span className="material-symbols-outlined">refresh</span>
             </button>
-          ))}
-        </nav>
-
-        <button className="bd-logout" onClick={handleLogout} type="button">Đăng xuất</button>
-      </aside>
-
-      {/* Main */}
-      <main className="bd-main">
-        <header className="bd-topbar">
-          <div>
-            <h1 className="bd-page-title">
-              {activeTab === 'today' && 'Lịch hẹn hôm nay'}
-              {activeTab === 'schedule' && 'Lịch theo ngày'}
-              {activeTab === 'upcoming' && 'Lịch hẹn sắp tới'}
-              {activeTab === 'history' && 'Lịch sử cắt tóc'}
-            </h1>
-            <p className="bd-page-date">
-              {new Date().toLocaleDateString('vi-VN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
-            </p>
           </div>
-          <button className="bd-btn-outline" onClick={load} type="button">Làm mới</button>
         </header>
 
-        <div className="bd-content">
+        <section className="bd-content-shell">
           {loading && <LoadingState />}
           {!loading && error && <ErrorState message={error} onRetry={load} />}
 
@@ -340,9 +299,9 @@ function BarberDashboardPage() {
               )}
             </>
           )}
-        </div>
-      </main>
-    </div>
+        </section>
+      </div>
+    </PageLayout>
   );
 }
 

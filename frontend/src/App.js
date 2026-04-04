@@ -14,7 +14,8 @@ import {
   SignupPage,
   BookingPage,
   TimeSelectionPage,
-  BookingDetailsPage,
+  BookingFlowDetailsPage,
+  AppointmentDetailsPage,
   PaymentPage,
   BookingCompletePage,
   ReviewBarberPage,
@@ -42,7 +43,7 @@ const RootRedirect = () => {
   if (user?.role === 'admin') return <Navigate to="/admin" replace />;
   if (user?.role === 'barber') return <Navigate to="/barber" replace />;
   
-  return <Navigate to="/account" replace />;
+  return <Navigate to="/home" replace />;
 };
 
 function App() {
@@ -55,7 +56,14 @@ function App() {
         <Route path="/barbers/:barberId" element={<BarberProfilePage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
-        <Route path="/home" element={<HomePage />} />
+        <Route 
+          path="/home" 
+          element={
+            <ProtectedRoute>
+              <HomePage />
+            </ProtectedRoute>
+          } 
+        />
 
         {/* Protected Routes */}
         <Route 
@@ -78,7 +86,7 @@ function App() {
           path="/booking/details"
           element={
             <ProtectedRoute>
-              <BookingDetailsPage />
+              <BookingFlowDetailsPage />
             </ProtectedRoute>
           }
         />
@@ -102,7 +110,7 @@ function App() {
           path="/account/appointment/:appointmentId"
           element={
             <ProtectedRoute>
-              <BookingDetailsPage />
+              <AppointmentDetailsPage />
             </ProtectedRoute>
           }
         />

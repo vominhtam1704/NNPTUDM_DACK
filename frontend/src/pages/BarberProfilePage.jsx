@@ -1,7 +1,6 @@
-import React, { useEffect, useState, useContext } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { getPublicBarberProfile } from '../services/barbers';
-import { AuthContext } from '../context/AuthContext';
 import PageLayout from '../components/PageLayout';
 import './BarberProfilePage.scss';
 
@@ -13,11 +12,9 @@ const formatCurrency = (value) => `${Number(value || 0).toLocaleString('vi-VN')}
 function BarberProfilePage() {
   const navigate = useNavigate();
   const { barberId } = useParams();
-  const { user: authUser } = useContext(AuthContext) || {};
   const [profile, setProfile] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
-  const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
     let active = true;
@@ -50,7 +47,7 @@ function BarberProfilePage() {
     return () => {
       active = false;
     };
-  }, [barberId, refreshKey]);
+  }, [barberId]);
 
   if (isLoading) {
     return (
@@ -83,161 +80,7 @@ function BarberProfilePage() {
   return (
     <PageLayout>
       <div className="barber-profile-page">
-        <header className="barber-profile-topbar">
-          <div className="topbar-brand">
-            <h1>Cat Toc Pro</h1>
-            <nav>
-              <Link to="/booking">Lich Hen</Link>
-              <Link to="/">Khach Hang</Link>
-              <Link to="/">Bao Cao</Link>
-            </nav>
-          </div>
-
-          <div className="topbar-actions">
-            <button
-              onClick={() => setRefreshKey(prev => prev + 1)}
-              title="Lam tuoi du lieu"
-              type="button"
-            >
-              <span className="material-symbols-outlined">refresh</span>
-            </button>
-            <button type="button" title="Thong bao">
-              <span className="material-symbols-outlined">notifications</span>
-            </button>
-            <button type="button" title="Cai dat">
-              <span className="material-symbols-outlined">settings</span>
-            </button>
-            <div className="topbar-avatar">
-              <img alt={authUser?.name || 'User'} src={authUser?.avatar || fallbackAvatar} />
-            </div>
-          </div>
-        </header>
-
-      <aside className="barber-profile-sidebar">
-        <div className="sidebar-brand">
-          <h2>Tiem Toc Nghe Thuat</h2>
-          <p>{authUser ? `Xin chao, ${authUser.name}` : 'Quan tri he thong'}</p>
-        </div>
-
-        <nav className="sidebar-nav">
-          {(() => {
-            // Render navigation based on user role
-            if (authUser?.role === 'admin') {
-              return (
-                <>
-                  <a className="active" href="/#">
-                    <span className="material-symbols-outlined">dashboard</span>
-                    Bang Dieu Khien
-                  </a>
-                  <a href="/#">
-                    <span className="material-symbols-outlined">people</span>
-                    Quan Ly Nhan Vien
-                  </a>
-                  <a href="/#">
-                    <span className="material-symbols-outlined">content_cut</span>
-                    Quan Ly Dich Vu
-                  </a>
-                  <a href="/#">
-                    <span className="material-symbols-outlined">receipt</span>
-                    Quan Ly Thanh Toan
-                  </a>
-                  <a href="/#">
-                    <span className="material-symbols-outlined">assessment</span>
-                    Bao Cao
-                  </a>
-                </>
-              );
-            } else if (authUser?.role === 'barber') {
-              return (
-                <>
-                  <a className="active" href="/#">
-                    <span className="material-symbols-outlined">dashboard</span>
-                    Bang Dieu Khien
-                  </a>
-                  <a href="/#">
-                    <span className="material-symbols-outlined">calendar_today</span>
-                    Lich Lam Viec
-                  </a>
-                  <a href="/#">
-                    <span className="material-symbols-outlined">content_cut</span>
-                    Dich Vu Cua Toi
-                  </a>
-                  <a href="/#">
-                    <span className="material-symbols-outlined">star</span>
-                    Danh Gia
-                  </a>
-                  <a href="/#">
-                    <span className="material-symbols-outlined">settings_accessibility</span>
-                    Ho So Cua Toi
-                  </a>
-                </>
-              );
-            } else if (authUser?.role === 'customer') {
-              return (
-                <>
-                  <a className="active" href="/#">
-                    <span className="material-symbols-outlined">dashboard</span>
-                    Cac Lich Hen
-                  </a>
-                  <a href="/#">
-                    <span className="material-symbols-outlined">bookmark</span>
-                    Theo Doi
-                  </a>
-                  <a href="/#">
-                    <span className="material-symbols-outlined">star</span>
-                    Danh Gia Cua Toi
-                  </a>
-                  <a href="/#">
-                    <span className="material-symbols-outlined">account_circle</span>
-                    Ho So Cu
-                  </a>
-                </>
-              );
-            } else {
-              // Guest/Not logged in
-              return (
-                <>
-                  <a className="active" href="/#">
-                    <span className="material-symbols-outlined">home</span>
-                    Trang Chu
-                  </a>
-                  <a href="/#">
-                    <span className="material-symbols-outlined">search</span>
-                    Tim Kiem
-                  </a>
-                  <a href="/#">
-                    <span className="material-symbols-outlined">info</span>
-                    Thong Tin
-                  </a>
-                </>
-              );
-            }
-          })()}
-        </nav>
-
-        <div className="sidebar-footer">
-          <button className="tonal-button" onClick={() => navigate('/booking')} type="button">
-            Dat Hen Moi
-          </button>
-          <button
-            className="tonal-button"
-            onClick={() => {
-              // Handle logout or navigate to login
-              localStorage.removeItem('accessToken');
-              localStorage.removeItem('refreshToken');
-              localStorage.removeItem('user');
-              navigate('/');
-            }}
-            type="button"
-            title="Dang xuat"
-          >
-            <span className="material-symbols-outlined">logout</span>
-            Dang Xuat
-          </button>
-        </div>
-      </aside>
-
-      <main className="barber-profile-shell">
+        <main className="barber-profile-shell">
         <section className="hero-section">
           <div className="hero-media">
             <div className="hero-image-wrap">

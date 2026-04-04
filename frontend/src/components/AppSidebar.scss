@@ -4,21 +4,55 @@
   width: 16rem;
   display: none;
   flex-direction: column;
-  padding: 6rem 1rem 1rem;
-  background: rgba(248, 250, 252, 0.94);
+  padding: 2.5rem 1rem 1.5rem;
+  background: rgba(248, 250, 252, 0.98);
   backdrop-filter: blur(16px);
   border-right: 1px solid rgba(219, 232, 246, 0.8);
   z-index: 1000;
-  overflow-y: auto;
+  box-shadow: 0 0 40px rgba(0, 0, 0, 0.02);
+
+  /* Sidebar Brand */
+  .sidebar-brand {
+    padding: 0 1rem 2.5rem;
+    display: flex;
+    flex-direction: column;
+    
+    .brand-primary {
+      color: #006362;
+      font-family: 'Manrope', sans-serif;
+      font-size: 1.25rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+    
+    .brand-secondary {
+      color: #64748b;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      margin-top: 4px;
+    }
+  }
 
   /* Sidebar Profile Header */
   .sidebar-profile {
-    padding: 0 1rem;
+    padding: 1.25rem 1rem;
     margin-bottom: 2rem;
     display: flex;
     align-items: center;
     gap: 0.85rem;
-    border-bottom: none;
+    border-radius: 1.25rem;
+    background: #fff;
+    border: 1px solid rgba(219, 232, 246, 0.5);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+    transition: all 0.2s ease;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.05);
+    }
   }
 
   .profile-avatar {
@@ -28,6 +62,8 @@
     border-radius: 999px;
     background: #1b7d7c;
     flex-shrink: 0;
+    border: 2px solid #fff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 
     img {
       width: 100%;
@@ -43,7 +79,7 @@
     h3 {
       margin: 0;
       color: #115e59;
-      font-size: 0.95rem;
+      font-size: 0.92rem;
       font-weight: 800;
       white-space: nowrap;
       text-overflow: ellipsis;
@@ -55,7 +91,7 @@
       color: #64748b;
       font-size: 0.62rem;
       font-weight: 700;
-      letter-spacing: 0.18em;
+      letter-spacing: 0.12em;
       text-transform: uppercase;
     }
   }
@@ -64,86 +100,66 @@
   .sidebar-nav {
     flex: 1;
     padding: 0;
-    overflow-y: auto;
     display: grid;
-    gap: 0.35rem;
+    gap: 0.5rem;
 
     .sidebar-nav-item {
       display: flex;
       align-items: center;
-      gap: 0.85rem;
-      padding: 0.9rem 1rem;
-      border-left: 4px solid transparent;
-      border-radius: 0.95rem;
+      gap: 1rem;
+      padding: 0.9rem 1.25rem;
+      border-radius: 1rem;
       color: #475569;
-      font-size: 0.88rem;
+      font-size: 0.95rem;
       font-weight: 600;
       text-decoration: none;
-      transition: all 0.3s ease;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 
       .material-symbols-outlined {
-        font-size: 20px;
-        width: 20px;
-        height: 20px;
-        flex-shrink: 0;
-      }
-
-      span:last-child {
-        flex: 1;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
+        font-size: 22px;
+        transition: transform 0.2s ease;
       }
 
       &:hover {
-        background: rgba(153, 246, 228, 0.2);
-        color: #0f766e;
+        background: rgba(153, 246, 228, 0.15);
+        color: #0d9488;
+        .material-symbols-outlined {
+          transform: translateX(2px);
+        }
       }
 
       &.active {
-        border-left-color: #0f766e;
-        background: rgba(153, 246, 228, 0.2);
-        color: #0f766e;
-        font-weight: 800;
+        background: #006362;
+        color: #fff;
+        font-weight: 700;
+        box-shadow: 0 8px 16px rgba(0, 99, 98, 0.15);
       }
     }
   }
 
   /* Sidebar Footer */
   .sidebar-footer {
-    margin-top: auto;
-    padding-top: 1rem;
-    border-top: 1px solid rgba(203, 213, 225, 0.6);
-    display: grid;
-    gap: 0.35rem;
+    padding-top: 1.5rem;
+    margin-top: 1.5rem;
+    border-top: 1px solid rgba(219, 232, 246, 0.6);
 
-    .sidebar-footer-btn {
+    .logout-btn {
+      width: 100%;
       display: flex;
       align-items: center;
-      gap: 0.85rem;
-      padding: 0.9rem 1rem;
-      border-radius: 0.95rem;
-      color: #475569;
-      font-size: 0.88rem;
-      font-weight: 600;
-      text-decoration: none;
+      gap: 1rem;
+      padding: 0.9rem 1.25rem;
+      border: 0;
       background: transparent;
-      border: none;
+      border-radius: 1rem;
+      color: #ef4444;
+      font-size: 0.95rem;
+      font-weight: 700;
       cursor: pointer;
-      transition: all 0.3s ease;
-      text-align: left;
-      font-family: inherit;
-
-      .material-symbols-outlined {
-        font-size: 20px;
-        width: 20px;
-        height: 20px;
-        flex-shrink: 0;
-      }
+      transition: all 0.2s;
 
       &:hover {
-        background: rgba(153, 246, 228, 0.2);
-        color: #0f766e;
+        background: #fee2e2;
       }
     }
   }
@@ -160,7 +176,7 @@
   .app-sidebar {
     position: fixed;
     left: -16rem;
-    transition: left 0.3s ease;
+    transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
     &.open {
       left: 0;

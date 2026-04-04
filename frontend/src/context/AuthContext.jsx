@@ -1,5 +1,6 @@
 import React, { createContext, useState, useEffect, useCallback } from 'react';
 import apiClient from '../services/api';
+import { uploadUserAvatar } from '../services/users';
 
 export const AuthContext = createContext();
 
@@ -247,7 +248,31 @@ export function AuthProvider({ children }) {
     resetPassword,
     refreshAccessToken,
     getCurrentUser,
-    updateProfile
+    updateProfile,
+    uploadAvatar: useCallback(async (formData) => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const response = await uploadUserAvatar(formData);
+        if (response.success) {
+          // IMPORTANT: The backend returns the OLD user object in the avatar upload response.
+          // We must fetch the fresh user profile to ensure the UI reflects the new avatar URL.
+          const freshResponse = await getCurrentUser(accessToken);
+          const userData = freshResponse?.data || response.data;
+          
+          setUser(userData);
+          localStorage.setItem('user', JSON.stringify(userData));
+          return { success: true, data: userData, message: response.message };
+        }
+        throw new Error(response.message);
+      } catch (err) {
+        const errorMsg = err.response?.data?.message || err.message || 'Upload avatar failed';
+        setError(errorMsg);
+        return { success: false, message: errorMsg };
+      } finally {
+        setIsLoading(false);
+      }
+    }, [accessToken, getCurrentUser])
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -10,6 +10,7 @@ import { getCategories, createCategory, updateCategory, deleteCategory } from '.
 import { getInventory, createInventoryItem, updateInventoryItem, deleteInventoryItem, adjustStock } from '../../services/inventory';
 import { getAllUsers, updateUser, deleteUser } from '../../services/users';
 import { getRoles } from '../../services/roles';
+import PageLayout from '../../components/PageLayout';
 import '../AdminDashboardPage.scss';
 
 // ─── Utilities ───────────────────────────────────────────────
@@ -1107,83 +1108,49 @@ const TABS = [
 
 function AdminDashboardPage() {
   const [activeTab, setActiveTab] = useState('analytics');
-  const [menuOpen, setMenuOpen] = useState(false);
 
   const user = useMemo(() => {
     try { return JSON.parse(localStorage.getItem('user') || '{}'); }
     catch { return {}; }
   }, []);
 
-  const handleLogout = () => {
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken');
-    localStorage.removeItem('user');
-    window.location.href = '/login';
-  };
 
   return (
-    <div className="admin-cms">
-      {/* Sidebar */}
-      <aside className={`cms-sidebar${menuOpen ? ' open' : ''}`}>
-        <div className="cms-brand">
-          <div className="cms-brand-mark">BA</div>
-          <div>
-            <span className="cms-brand-name">Barber Atelier</span>
-            <span className="cms-brand-sub">Admin CMS</span>
-          </div>
-        </div>
-
-        <nav className="cms-nav">
-          {TABS.map((tab) => (
-            <button
-              className={`cms-nav-item${activeTab === tab.key ? ' active' : ''}`}
-              key={tab.key}
-              onClick={() => { setActiveTab(tab.key); setMenuOpen(false); }}
-              type="button"
-            >
-              {tab.label}
-            </button>
-          ))}
-        </nav>
-
-        <div className="cms-sidebar-footer">
-          <div className="cms-user-info">
-            <div className="cms-user-avatar">{(user.name || 'A')[0].toUpperCase()}</div>
-            <div>
-              <p className="cms-user-name">{user.name || 'Admin'}</p>
-              <p className="cms-user-role">{user.role || 'admin'}</p>
+    <PageLayout>
+      <div className="admin-cms-unified">
+        <header className="cms-header">
+          <div className="cms-brand-info">
+            <h1>Quản trị hệ thống</h1>
+            <div className="cms-user-pill">
+              <span className="avatar">{(user.name || 'A')[0].toUpperCase()}</span>
+              <span className="name">{user.name || 'Admin'}</span>
             </div>
           </div>
-          <button className="btn-logout" onClick={handleLogout} type="button">Đăng xuất</button>
-        </div>
-      </aside>
 
-      {/* Mobile top bar */}
-      <header className="cms-mobile-bar">
-        <button
-          className="cms-hamburger"
-          onClick={() => setMenuOpen((o) => !o)}
-          type="button"
-          aria-label="Menu"
-        >
-          <span /><span /><span />
-        </button>
-        <span className="cms-mobile-title">Barber Atelier Admin</span>
-      </header>
+          <nav className="cms-tab-nav">
+            {TABS.map((tab) => (
+              <button
+                className={`cms-tab-item${activeTab === tab.key ? ' active' : ''}`}
+                key={tab.key}
+                onClick={() => setActiveTab(tab.key)}
+                type="button"
+              >
+                {tab.label}
+              </button>
+            ))}
+          </nav>
+        </header>
 
-      {/* Overlay */}
-      {menuOpen && <div className="cms-overlay" onClick={() => setMenuOpen(false)} />}
-
-      {/* Main content */}
-      <main className="cms-main">
-        {activeTab === 'analytics' && <AnalyticsTab />}
-        {activeTab === 'appointments' && <AppointmentsTab />}
-        {activeTab === 'products' && <ProductsTab />}
-        {activeTab === 'categories' && <CategoriesTab />}
-        {activeTab === 'inventory' && <InventoryTab />}
-        {activeTab === 'staff' && <StaffTab />}
-      </main>
-    </div>
+        <main className="cms-content-shell">
+          {activeTab === 'analytics' && <AnalyticsTab />}
+          {activeTab === 'appointments' && <AppointmentsTab />}
+          {activeTab === 'products' && <ProductsTab />}
+          {activeTab === 'categories' && <CategoriesTab />}
+          {activeTab === 'inventory' && <InventoryTab />}
+          {activeTab === 'staff' && <StaffTab />}
+        </main>
+      </div>
+    </PageLayout>
   );
 }
 
