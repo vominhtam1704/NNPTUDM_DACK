@@ -20,11 +20,11 @@ router.get(
 );
 
 /**
- * @route   GET /api/payments/epay/mock-checkout
+ * @route   ANY /api/payments/epay/mock-checkout
  * @desc    Mock E-Pay checkout page for development/testing
  * @access  Public
  */
-router.get('/epay/mock-checkout', paymentController.mockEPayCheckout);
+router.all('/epay/mock-checkout', paymentController.mockEPayCheckout);
 
 /**
  * @route   POST /api/payments/epay/webhook

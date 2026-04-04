@@ -353,10 +353,21 @@ exports.ePayWebhook = async (req, res) => {
  */
 exports.mockEPayCheckout = async (req, res) => {
   try {
-    const { paymentId, amount, ref_code, return_url } = req.query;
+    // Handle both GET (req.query) and POST (req.body)
+    const { 
+      paymentId, 
+      amount, 
+      order_id, 
+      ref_code, 
+      return_url 
+    } = { ...req.query, ...req.body };
 
-    if (!paymentId || !amount) {
-      return res.status(400).send('Missing payment parameters');
+    const transactionCode = ref_code || order_id || 'MOCK-TXN';
+    const finalAmount = amount || 0;
+    const finalPaymentId = paymentId || '';
+
+    if (!finalAmount) {
+      return res.status(400).send('Missing payment parameters (amount)');
     }
 
     // HTML form for mock E-Pay checkout
@@ -501,11 +512,11 @@ exports.mockEPayCheckout = async (req, res) => {
     <div class="info-box">
       <div class="info-row">
         <span>Mã giao dịch:</span>
-        <span>${ref_code}</span>
+        <span>${transactionCode}</span>
       </div>
       <div class="info-row">
         <span>Số tiền thanh toán:</span>
-        <span class="amount">${Number(amount).toLocaleString('vi-VN')}đ</span>
+        <span class="amount">${Number(finalAmount).toLocaleString('vi-VN')}đ</span>
       </div>
     </div>
 
@@ -523,11 +534,11 @@ exports.mockEPayCheckout = async (req, res) => {
     function confirmPayment() {
       // In production, E-Pay would process real payment
       // For mock: just redirect back to return_url
-      window.location.href = '${decodeURIComponent(return_url || 'http://localhost:3000/payment/done')}?status=success&paymentId=${paymentId}';
+      window.location.href = '${decodeURIComponent(return_url || 'http://localhost:3000/payment/done')}?status=success&paymentId=${finalPaymentId}';
     }
 
     function cancelPayment() {
-      window.location.href = '${decodeURIComponent(return_url || 'http://localhost:3000')}?status=cancelled&paymentId=${paymentId}';
+      window.location.href = '${decodeURIComponent(return_url || 'http://localhost:3000')}?status=cancelled&paymentId=${finalPaymentId}';
     }
   </script>
 </body>
