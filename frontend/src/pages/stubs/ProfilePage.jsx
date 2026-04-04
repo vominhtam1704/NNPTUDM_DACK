@@ -1,12 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useAuth } from '../../hooks/useAuth';
 import { cancelReservation, getMyReservations } from '../../services/reservations';
 import PageLayout from '../../components/PageLayout';
 import '../ProfilePage.scss';
-
-const fallbackAvatar =
-  'https://lh3.googleusercontent.com/aida-public/AB6AXuARl1M_Zng5PLZFLH7ed48VeWCDsTYp1p5F2T2Eg_V_44bKI0zkCyteC2tI59YxBmy1BPh4X6-mxB0Je3iHoRbPi1xurikEhBvp_dR1ejKGxvIg6UaRHpAVELalHCjNHpj6ysW9z6HlZDkJk8WxMSm1L-DwiMSQgyvDHg3pENM7DrIFL8wE4POiH-htu-fpZCkk91fPYwIFW9oYrdqzsRzlsAR3nnwIrxmILbjvt5WjBxMP9OzWBPUaNkgPegqjE20NPkkZ1efDI88';
 
 const isUpcomingStatus = (status) => ['pending', 'confirmed'].includes(status);
 const isCompletedStatus = (status) => status === 'done';
@@ -45,7 +41,6 @@ const getStatusMeta = (status) => {
 };
 
 function ProfilePage() {
-  const { user } = useAuth();
   const [reservations, setReservations] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
@@ -123,48 +118,8 @@ function ProfilePage() {
   return (
     <PageLayout>
       <div className="appointments-page">
-        <aside className="appointments-sidebar">
-          <div className="appointments-sidebar-brand">
-            <h1>The Atelier</h1>
-            <p>Premium Management</p>
-          </div>
-
-          <nav className="appointments-sidebar-nav">
-            <Link to="/">Trang chu</Link>
-            <Link className="active" to="/profile">
-              Lich hen
-            </Link>
-            <Link to="/profile">Ho so</Link>
-          </nav>
-
-          <div className="appointments-sidebar-footer">
-            <a href="/#">Cai dat</a>
-            <div className="appointments-user-card">
-              <div className="appointments-user-avatar">
-                <img alt={user?.name || 'Customer avatar'} src={user?.avatar || fallbackAvatar} />
-              </div>
-              <div>
-                <p>{user?.name || 'Khach hang'}</p>
-                <span>Khach hang V.I.P</span>
-              </div>
-            </div>
-          </div>
-        </aside>
-
-      <main className="appointments-main">
-        <header className="appointments-topbar">
-          <div className="appointments-topbar-brand">Artisan Ledger</div>
-          <div className="appointments-topbar-actions">
-            <button type="button">
-              <span className="material-symbols-outlined">notifications</span>
-            </button>
-            <button type="button">
-              <span className="material-symbols-outlined">account_circle</span>
-            </button>
-          </div>
-        </header>
-
-        <div className="appointments-content">
+        <main className="appointments-main">
+          <div className="appointments-content">
           <section className="appointments-heading">
             <div>
               <span>Quan ly lich trinh</span>
@@ -336,25 +291,6 @@ function ProfilePage() {
           ) : null}
         </div>
       </main>
-
-      <nav className="appointments-bottom-nav">
-        <Link to="/">
-          <span className="material-symbols-outlined">home</span>
-          <span>Trang chu</span>
-        </Link>
-        <Link className="active" to="/profile">
-          <span className="material-symbols-outlined">event_note</span>
-          <span>Lich hen</span>
-        </Link>
-        <Link to="/booking">
-          <span className="material-symbols-outlined">content_cut</span>
-          <span>Dat cho</span>
-        </Link>
-        <Link to="/profile">
-          <span className="material-symbols-outlined">person</span>
-          <span>Ho so</span>
-        </Link>
-      </nav>
     </div>
     </PageLayout>
   );
