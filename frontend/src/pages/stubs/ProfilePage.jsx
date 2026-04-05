@@ -73,8 +73,12 @@ function ProfilePage() {
     };
 
     loadReservations();
+    // Auto-refresh so user sees status changes (e.g. from barber confirmation)
+    const interval = setInterval(loadReservations, 30000);
+    
     return () => {
       active = false;
+      clearInterval(interval);
     };
   }, []);
 

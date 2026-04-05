@@ -46,3 +46,8 @@ export const confirmReservation = async (id) => {
   const response = await apiClient.put(`/reservations/${id}/confirm`);
   return response;
 };
+
+export const completeReservation = async (id) => {
+  const response = await apiClient.put(`/reservations/${id}/complete`);
+  return response;
+};

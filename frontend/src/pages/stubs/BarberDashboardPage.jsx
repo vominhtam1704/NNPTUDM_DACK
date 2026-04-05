@@ -3,27 +3,27 @@
 // Member C - Barber Atelier
 // ============================================
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { getMyReservations, confirmReservation, updateReservation } from '../../services/reservations';
+import { getMyReservations, confirmReservation, completeReservation } from '../../services/reservations';
 import PageLayout from '../../components/PageLayout';
 import '../BarberDashboardPage.scss';
 
 const STATUS_LABEL = {
   pending: 'Chờ xác nhận',
   confirmed: 'Đã xác nhận',
-  completed: 'Hoàn thành',
+  done: 'Hoàn thành',
   cancelled: 'Đã hủy',
 };
 const STATUS_CLASS = {
   pending: 'bd-badge-warning',
   confirmed: 'bd-badge-info',
-  completed: 'bd-badge-success',
+  done: 'bd-badge-success',
   cancelled: 'bd-badge-error',
 };
 
 function LoadingState() {
   return (
-    <div className="bd-state">
-      <div className="bd-spinner" />
+    <div className="cms-state">
+      <div className="cms-spinner" />
       <span>Đang tải dữ liệu...</span>
     </div>
   );
@@ -31,9 +31,13 @@ function LoadingState() {
 
 function ErrorState({ message, onRetry }) {
   return (
-    <div className="bd-state bd-state-error">
-      <p>{message}</p>
-      {onRetry && <button className="bd-btn-outline" onClick={onRetry} type="button">Thử lại</button>}
+    <div className="cms-state">
+      <p style={{ color: 'var(--error)', fontWeight: 600 }}>{message}</p>
+      {onRetry && (
+        <button className="btn-sm btn-primary" onClick={onRetry} type="button">
+          Thử lại
+        </button>
+      )}
     </div>
   );
 }
@@ -58,70 +62,63 @@ function BarberDashboardPage() {
   const [error, setError] = useState('');
   const [selectedDate, setSelectedDate] = useState(getTodayString());
   const [activeTab, setActiveTab] = useState('today');
+  const [lastSync, setLastSync] = useState(new Date());
   const [actionLoading, setActionLoading] = useState('');
 
-
-  const load = useCallback(async () => {
-    setLoading(true);
+  const load = useCallback(async (isAuto = false) => {
+    if (!isAuto) setLoading(true);
     setError('');
     try {
       const res = await getMyReservations();
       // Handle standardized response for reservations (returns full body)
       const data = Array.isArray(res) ? res : (res?.data || res?.reservations || []);
       setAllBookings(data);
+      setLastSync(new Date());
     } catch (e) {
-      setError(e.message || 'Không thể tải lịch hẹn');
+      if (!isAuto) setError(e.message || 'Không thể tải lịch hẹn');
     } finally {
-      setLoading(false);
+      if (!isAuto) setLoading(false);
     }
   }, []);
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => {
+    load();
+    // Auto-refresh every 30 seconds to catch new customer bookings
+    const interval = setInterval(() => {
+      load(true);
+    }, 30000);
+    return () => clearInterval(interval);
+  }, [load]);
 
   const today = getTodayString();
 
-  const todayBookings = useMemo(() => {
-    return allBookings
-      .filter((r) => {
-        const rDate = r.appointmentDate ? r.appointmentDate.slice(0, 10) : '';
-        return rDate === today;
-      })
-      .sort((a, b) => (a.appointmentTime || '').localeCompare(b.appointmentTime || ''));
-  }, [allBookings, today]);
-
-  const selectedDateBookings = useMemo(() => {
-    return allBookings
-      .filter((r) => {
-        const rDate = r.appointmentDate ? r.appointmentDate.slice(0, 10) : '';
-        return rDate === selectedDate;
-      })
-      .sort((a, b) => (a.appointmentTime || '').localeCompare(b.appointmentTime || ''));
-  }, [allBookings, selectedDate]);
-
-  const upcomingBookings = useMemo(() => {
-    return allBookings
-      .filter((r) => {
-        const rDate = r.appointmentDate ? r.appointmentDate.slice(0, 10) : '';
-        return rDate > today && (r.status === 'pending' || r.status === 'confirmed');
-      })
-      .sort((a, b) => {
-        const dateComp = (a.appointmentDate || '').localeCompare(b.appointmentDate || '');
-        if (dateComp !== 0) return dateComp;
-        return (a.appointmentTime || '').localeCompare(b.appointmentTime || '');
-      });
-  }, [allBookings, today]);
-
-  const historyBookings = useMemo(() => {
-    return allBookings
-      .filter((r) => r.status === 'completed' || r.status === 'cancelled')
-      .sort((a, b) => (b.appointmentDate || '').localeCompare(a.appointmentDate || ''));
-  }, [allBookings]);
+  const currentBookings = useMemo(() => {
+    let list = [];
+    if (activeTab === 'today') {
+      list = allBookings.filter((r) => (r.appointmentDate?.slice(0, 10) || '') === today && r.status !== 'done' && r.status !== 'cancelled');
+    } else if (activeTab === 'schedule') {
+      list = allBookings.filter((r) => (r.appointmentDate?.slice(0, 10) || '') === selectedDate && r.status !== 'done' && r.status !== 'cancelled');
+    } else if (activeTab === 'upcoming') {
+      list = allBookings.filter((r) => (r.appointmentDate?.slice(0, 10) || '') > today && (r.status === 'pending' || r.status === 'confirmed'));
+    } else if (activeTab === 'history') {
+      list = allBookings.filter((r) => r.status === 'done' || r.status === 'cancelled');
+    }
+    
+    return list.sort((a, b) => {
+      const dateComp = (a.appointmentDate || '').localeCompare(b.appointmentDate || '');
+      if (dateComp !== 0) return dateComp;
+      return (a.appointmentTime || '').localeCompare(b.appointmentTime || '');
+    });
+  }, [allBookings, activeTab, today, selectedDate]);
 
   const handleAction = async (action, id) => {
     setActionLoading(`${action}-${id}`);
     try {
-      if (action === 'confirm') await confirmReservation(id);
-      else if (action === 'complete') await updateReservation(id, { status: 'completed' });
+      if (action === 'confirm') {
+        await confirmReservation(id);
+      } else if (action === 'complete') {
+        await completeReservation(id);
+      }
       await load();
     } catch (e) {
       alert(e.message || 'Thao tác thất bại');
@@ -130,176 +127,150 @@ function BarberDashboardPage() {
     }
   };
 
-
-  // Stats summary
-  const totalToday = todayBookings.length;
-  const completedToday = todayBookings.filter((r) => r.status === 'completed').length;
+  // Stats summary (counts only pending/confirmed for active tabs)
+  const totalToday = allBookings.filter((r) => (r.appointmentDate?.slice(0, 10) || '') === today && r.status !== 'done' && r.status !== 'cancelled').length;
   const pendingTotal = allBookings.filter((r) => r.status === 'pending').length;
+  const totalUpcoming = allBookings.filter((r) => (r.appointmentDate?.slice(0, 10) || '') > today && (r.status === 'pending' || r.status === 'confirmed')).length;
 
   const TABS = [
     { key: 'today', label: `Hôm nay (${totalToday})` },
     { key: 'schedule', label: 'Lịch theo ngày' },
-    { key: 'upcoming', label: 'Sắp tới' },
+    { key: 'upcoming', label: `Sắp tới (${totalUpcoming})` },
     { key: 'history', label: 'Lịch sử' },
   ];
 
-  const renderBookingCard = (r) => (
-    <div className={`bd-booking-card bd-status-${r.status}`} key={r._id}>
-      <div className="bd-booking-time">{formatTime(r.appointmentTime)}</div>
-      <div className="bd-booking-body">
-        <h4 className="bd-booking-customer">{r.customer?.name || 'Khách hàng'}</h4>
-        <p className="bd-booking-service">{r.service?.name || '—'}</p>
-        {r.customer?.phone && <p className="bd-booking-phone">{r.customer.phone}</p>}
-        <p className="bd-booking-date">{formatDate(r.appointmentDate)}</p>
-      </div>
-      <div className="bd-booking-meta">
-        <span className={`bd-badge ${STATUS_CLASS[r.status] || ''}`}>{STATUS_LABEL[r.status] || r.status}</span>
-        {r.service?.price && <span className="bd-price">{Number(r.service.price).toLocaleString('vi-VN')}đ</span>}
-      </div>
-      <div className="bd-booking-actions">
-        {r.status === 'pending' && (
-          <button
-            className="bd-btn-primary"
-            disabled={!!actionLoading}
-            onClick={() => handleAction('confirm', r._id)}
-            type="button"
-          >
-            {actionLoading === `confirm-${r._id}` ? '...' : 'Nhận lịch'}
-          </button>
-        )}
-        {r.status === 'confirmed' && (
-          <button
-            className="bd-btn-success"
-            disabled={!!actionLoading}
-            onClick={() => handleAction('complete', r._id)}
-            type="button"
-          >
-            {actionLoading === `complete-${r._id}` ? '...' : 'Hoàn thành'}
-          </button>
-        )}
-      </div>
-    </div>
+  const renderRow = (r) => (
+    <tr key={r._id}>
+      <td className="time-cell">{formatTime(r.appointmentTime)}</td>
+      <td className="customer-name">
+        <div>{r.customer?.name || 'Khách hàng'}</div>
+        <div style={{ fontSize: '0.75rem', color: 'var(--muted)', fontWeight: 500 }}>{r.customer?.phone || ''}</div>
+      </td>
+      <td>{r.service?.name || '—'}</td>
+      <td>{formatDate(r.appointmentDate)}</td>
+      <td>
+        <span className={`badge ${STATUS_CLASS[r.status] || ''}`}>{STATUS_LABEL[r.status] || r.status}</span>
+      </td>
+      <td>
+        <div className="action-btns">
+          {r.status === 'pending' && (
+            <button
+              className="btn-sm btn-primary"
+              disabled={!!actionLoading}
+              onClick={() => handleAction('confirm', r._id)}
+              type="button"
+            >
+              {actionLoading === `confirm-${r._id}` ? '...' : 'Nhận lịch'}
+            </button>
+          )}
+          {r.status === 'confirmed' && (
+            <button
+              className="btn-sm btn-success"
+              disabled={!!actionLoading}
+              onClick={() => handleAction('complete', r._id)}
+              type="button"
+            >
+              {actionLoading === `complete-${r._id}` ? '...' : 'Hoàn thành'}
+            </button>
+          )}
+        </div>
+      </td>
+    </tr>
   );
 
   return (
     <PageLayout>
       <div className="barber-dashboard-unified">
-        <header className="bd-header">
-          <div className="header-titles">
-            <h1>Quản lý lịch hẹn</h1>
-            <p className="sub-text">{formatDate(new Date())}</p>
-          </div>
-          
-          <div className="bd-stats-row">
-            <div className="mini-stat">
-              <span className="label">Hôm nay</span>
-              <strong className="value">{totalToday}</strong>
+        <section className="tab-content">
+          <div className="tab-header">
+            <div>
+              <h2 className="tab-title">Lịch làm việc của tôi</h2>
+              <p className="tab-subtitle">
+                {formatDate(new Date())} 
+                <span className="sync-info">• Cập nhật lúc {lastSync.toLocaleTimeString('vi-VN')}</span>
+              </p>
             </div>
-            <div className="mini-stat">
-              <span className="label">Đã xong</span>
-              <strong className="value">{completedToday}</strong>
-            </div>
-            <div className="mini-stat">
-              <span className="label">Chờ duyệt</span>
-              <strong className="value pending">{pendingTotal}</strong>
-            </div>
-          </div>
-
-          <div className="bd-tab-nav">
-            {TABS.map((tab) => (
-              <button
-                className={`bd-tab-item${activeTab === tab.key ? ' active' : ''}`}
-                key={tab.key}
-                onClick={() => setActiveTab(tab.key)}
-                type="button"
-              >
-                {tab.label}
+            <div className="tab-actions">
+              <button className="btn-refresh" onClick={() => load()} title="Làm mới ngay" type="button">
+                <span className="material-symbols-outlined">sync</span>
               </button>
-            ))}
-            <button className="bd-refresh-btn" onClick={load} type="button">
-              <span className="material-symbols-outlined">refresh</span>
-            </button>
+            </div>
           </div>
-        </header>
 
-        <section className="bd-content-shell">
+          <div className="stats-grid">
+            <div className="stat-card accent-primary">
+              <p className="stat-label">Hôm nay</p>
+              <h3 className="stat-value">{totalToday}</h3>
+              <span className="stat-sub">Lịch hẹn trong ngày</span>
+            </div>
+            <div className="stat-card accent-amber">
+              <p className="stat-label">Đang chờ</p>
+              <h3 className="stat-value">{pendingTotal}</h3>
+              <span className="stat-sub">Cần xác nhận</span>
+            </div>
+            <div className="stat-card accent-success">
+              <p className="stat-label">Sắp tới</p>
+              <h3 className="stat-value">{totalUpcoming}</h3>
+              <span className="stat-sub">Lịch trong tương lai</span>
+            </div>
+          </div>
+
+          <div className="filter-bar">
+            <div className="status-tabs">
+              {TABS.map((tab) => (
+                <button
+                  className={`status-tab${activeTab === tab.key ? ' active' : ''}`}
+                  key={tab.key}
+                  onClick={() => setActiveTab(tab.key)}
+                  type="button"
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+            
+            {activeTab === 'schedule' && (
+              <div className="date-picker-mini">
+                <span>Chọn ngày:</span>
+                <input
+                  onChange={(e) => setSelectedDate(e.target.value)}
+                  type="date"
+                  value={selectedDate}
+                />
+              </div>
+            )}
+          </div>
+
           {loading && <LoadingState />}
           {!loading && error && <ErrorState message={error} onRetry={load} />}
 
           {!loading && !error && (
-            <>
-              {/* TAB: TODAY */}
-              {activeTab === 'today' && (
-                <>
-                  {todayBookings.length === 0 ? (
-                    <div className="bd-empty">
-                      <p className="bd-empty-title">Hôm nay chưa có lịch hẹn nào</p>
-                      <p className="bd-empty-sub">Hãy tận hưởng ngày nghỉ hoặc kiểm tra lại sau!</p>
-                    </div>
-                  ) : (
-                    <div className="bd-booking-list">
-                      {todayBookings.map(renderBookingCard)}
-                    </div>
-                  )}
-                </>
-              )}
-
-              {/* TAB: SCHEDULE BY DATE */}
-              {activeTab === 'schedule' && (
-                <>
-                  <div className="bd-date-picker">
-                    <label className="bd-date-label">
-                      Chọn ngày
-                      <input
-                        className="bd-date-input"
-                        onChange={(e) => setSelectedDate(e.target.value)}
-                        type="date"
-                        value={selectedDate}
-                      />
-                    </label>
-                  </div>
-                  {selectedDateBookings.length === 0 ? (
-                    <div className="bd-empty">
-                      <p className="bd-empty-title">Không có lịch hẹn vào ngày {new Date(selectedDate + 'T00:00:00').toLocaleDateString('vi-VN')}</p>
-                    </div>
-                  ) : (
-                    <div className="bd-booking-list">
-                      {selectedDateBookings.map(renderBookingCard)}
-                    </div>
-                  )}
-                </>
-              )}
-
-              {/* TAB: UPCOMING */}
-              {activeTab === 'upcoming' && (
-                <>
-                  {upcomingBookings.length === 0 ? (
-                    <div className="bd-empty">
-                      <p className="bd-empty-title">Không có lịch hẹn sắp tới</p>
-                    </div>
-                  ) : (
-                    <div className="bd-booking-list">
-                      {upcomingBookings.map(renderBookingCard)}
-                    </div>
-                  )}
-                </>
-              )}
-
-              {/* TAB: HISTORY */}
-              {activeTab === 'history' && (
-                <>
-                  {historyBookings.length === 0 ? (
-                    <div className="bd-empty">
-                      <p className="bd-empty-title">Chưa có lịch sử</p>
-                    </div>
-                  ) : (
-                    <div className="bd-booking-list">
-                      {historyBookings.map(renderBookingCard)}
-                    </div>
-                  )}
-                </>
-              )}
-            </>
+            <div className="data-table-wrap">
+              <table className="data-table">
+                <thead>
+                  <tr>
+                    <th>Thời gian</th>
+                    <th>Khách hàng</th>
+                    <th>Dịch vụ</th>
+                    <th>Ngày hẹn</th>
+                    <th>Trạng thái</th>
+                    <th>Thao tác</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {currentBookings.length === 0 ? (
+                    <tr>
+                      <td colSpan={6}>
+                        <div className="bd-empty">
+                          <h3>Không có lịch hẹn</h3>
+                          <p>Dữ liệu trống trong mục này</p>
+                        </div>
+                      </td>
+                    </tr>
+                  ) : currentBookings.map(renderRow)}
+                </tbody>
+              </table>
+            </div>
           )}
         </section>
       </div>

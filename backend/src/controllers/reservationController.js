@@ -371,6 +371,57 @@ exports.confirmReservation = async (req, res) => {
 };
 
 /**
+ * Complete Reservation - PUT /reservations/:id/complete
+ * Barber marks appointment as completed (done)
+ */
+exports.completeReservation = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const reservation = await Reservation.findById(id);
+    if (!reservation) {
+      return res.status(404).json(
+        formatError('Reservation not found')
+      );
+    }
+
+    // Can only complete if confirmed or pending
+    if (![APPOINTMENT_STATUS.PENDING, APPOINTMENT_STATUS.CONFIRMED].includes(reservation.status)) {
+      return res.status(400).json(
+        formatError(`Cannot complete ${reservation.status} reservation`)
+      );
+    }
+
+    reservation.status = APPOINTMENT_STATUS.DONE;
+    await reservation.save();
+
+    await reservation.populate([
+      { path: 'barberId', select: 'name email phone avatar' },
+      { path: 'customerId', select: 'name email phone avatar' },
+      { path: 'serviceId', select: 'name price duration' }
+    ]);
+
+    // ===== SEND NOTIFICATION =====
+    await Message.create({
+      sender: reservation.barberId,
+      receiver: reservation.customerId,
+      subject: 'Appointment completed',
+      content: `Your appointment on ${reservation.appointmentDate} has been completed. Thank you!`,
+      type: 'notification'
+    });
+
+    res.status(200).json(
+      formatSuccess(reservation, 'Reservation completed successfully')
+    );
+  } catch (error) {
+    console.error('Complete reservation error:', error);
+    res.status(500).json(
+      formatError('Failed to complete reservation: ' + error.message)
+    );
+  }
+};
+
+/**
  * Get Available Time Slots - GET /reservations/available-slots/:barberId
  * Get available time slots for a specific barber on a specific date
  */

@@ -1,558 +1,327 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Manrope:wght@600;700;800&display=swap');
 
 /* ============================================
-   BARBER DASHBOARD – DESIGN TOKENS
+   BARBER DASHBOARD – ADMIN STYLE SYSTEM
    ============================================ */
-.barber-dashboard {
+.barber-dashboard-unified {
   --primary: #006362;
   --primary-dark: #004d4c;
-  --primary-light: #e0f4f4;
-  --secondary: #5d5f5f;
-  --tertiary: #864725;
-  --bg: #f7f9ff;
+  --primary-light: rgba(0, 99, 98, 0.08);
+  --secondary: #64748b;
+  --bg: #f8fbfa;
   --surface: #ffffff;
-  --on-surface: #091d2e;
-  --error: #ba1a1a;
-  --error-light: #fff4f4;
-  --success: #15803d;
-  --success-light: #f0fdf4;
-  --warning: #b45309;
-  --warning-light: #fffbeb;
-  --info: #0369a1;
-  --info-light: #f0f9ff;
-  --border: #e2e8f0;
+  --on-surface: #0a2e2d;
+  --error: #ef4444;
+  --error-light: #fee2e2;
+  --success: #10b981;
+  --success-light: #d1fae5;
+  --warning: #f59e0b;
+  --warning-light: #fef3c7;
+  --info: #3b82f6;
+  --info-light: #dbeafe;
+  --border: rgba(226, 232, 240, 0.8);
   --muted: #64748b;
-  --sidebar-w: 17rem;
 
   display: flex;
-  min-height: 100vh;
+  flex-direction: column;
+  min-height: calc(100vh - 120px);
   background: var(--bg);
   color: var(--on-surface);
   font-family: 'Inter', sans-serif;
-  font-size: 0.9rem;
-}
-
-.barber-dashboard h1,
-.barber-dashboard h2,
-.barber-dashboard h3,
-.barber-dashboard h4 {
-  font-family: 'Manrope', sans-serif;
-  margin: 0;
-}
-
-.barber-dashboard p { margin: 0; }
-
-/* ============================================
-   SIDEBAR
-   ============================================ */
-.bd-sidebar {
-  position: fixed;
-  top: 0;
-  left: 0;
-  bottom: 0;
-  width: var(--sidebar-w);
-  background: var(--on-surface);
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
-  padding: 1.5rem 1.25rem;
-  z-index: 40;
-  overflow-y: auto;
-  display: none;
-}
-
-.bd-brand {
-  display: flex;
-  align-items: center;
-  gap: 0.8rem;
-}
-
-.bd-brand-mark {
-  width: 2.6rem;
-  height: 2.6rem;
-  border-radius: 10px;
-  background: var(--primary);
-  color: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: 'Manrope', sans-serif;
-  font-weight: 800;
-  font-size: 0.85rem;
-  flex-shrink: 0;
-}
-
-.bd-brand-name {
-  display: block;
-  font-family: 'Manrope', sans-serif;
-  font-weight: 800;
-  font-size: 0.95rem;
-  color: #fff;
-}
-
-.bd-brand-sub {
-  display: block;
-  font-size: 0.7rem;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.5);
-  margin-top: 1px;
-}
-
-.bd-barber-card {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0.9rem 1rem;
-  background: rgba(255, 255, 255, 0.08);
-  border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.bd-avatar {
-  width: 2.5rem;
-  height: 2.5rem;
-  border-radius: 50%;
-  background: var(--primary);
-  color: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: 'Manrope', sans-serif;
-  font-weight: 800;
-  font-size: 1rem;
-  flex-shrink: 0;
-}
-
-.bd-barber-name {
-  font-weight: 700;
-  font-size: 0.9rem;
-  color: #fff;
-}
-
-.bd-barber-role {
-  font-size: 0.7rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.5);
-  margin-top: 2px;
-}
-
-/* Summary stats in sidebar */
-.bd-summary-stats {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.6rem;
-}
-
-.bd-stat {
-  padding: 0.8rem;
-  background: rgba(255, 255, 255, 0.07);
-  border-radius: 10px;
-  text-align: center;
-}
-
-.bd-stat-val {
-  display: block;
-  font-family: 'Manrope', sans-serif;
-  font-size: 1.4rem;
-  font-weight: 800;
-  color: var(--primary-light);
-}
-
-.bd-stat-lbl {
-  display: block;
-  font-size: 0.68rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.45);
-  margin-top: 0.2rem;
-}
-
-/* Nav */
-.bd-nav {
-  display: flex;
-  flex-direction: column;
-  gap: 0.2rem;
-  flex: 1;
-}
-
-.bd-nav-item {
-  display: flex;
-  align-items: center;
-  width: 100%;
-  padding: 0.75rem 1rem;
-  border: none;
-  border-radius: 10px;
-  background: transparent;
-  color: rgba(255, 255, 255, 0.6);
-  font-family: 'Inter', sans-serif;
-  font-size: 0.88rem;
-  font-weight: 600;
-  text-align: left;
-  cursor: pointer;
-  transition: background 0.16s, color 0.16s;
-}
-
-.bd-nav-item:hover {
-  background: rgba(255, 255, 255, 0.08);
-  color: #fff;
-}
-
-.bd-nav-item.active {
-  background: var(--primary);
-  color: #fff;
-}
-
-.bd-logout {
-  padding: 0.7rem;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 10px;
-  background: transparent;
-  color: rgba(255, 255, 255, 0.55);
-  font-family: 'Inter', sans-serif;
-  font-size: 0.85rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.16s;
-  margin-top: auto;
-}
-
-.bd-logout:hover {
-  background: var(--error);
-  color: #fff;
-  border-color: var(--error);
 }
 
 /* ============================================
-   MAIN AREA
+   TAB CONTENT & HEADERS
    ============================================ */
-.bd-main {
-  flex: 1;
-  min-height: 100vh;
+.tab-content {
+  padding: 1.5rem;
   display: flex;
   flex-direction: column;
+  gap: 1.5rem;
+  animation: fadeUp 0.2s ease;
 }
 
-.bd-topbar {
-  position: sticky;
-  top: 0;
-  z-index: 30;
-  padding: 1.25rem 1.5rem;
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(16px);
-  border-bottom: 1px solid var(--border);
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.tab-header {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
-  gap: 1rem;
   flex-wrap: wrap;
+  gap: 1rem;
 }
 
-.bd-page-title {
-  font-size: 1.4rem;
+.tab-title {
+  font-size: 1.5rem;
+  font-family: 'Manrope', sans-serif;
+  font-weight: 800;
   color: var(--on-surface);
 }
 
-.bd-page-date {
-  font-size: 0.82rem;
+.tab-subtitle {
+  margin-top: 0.25rem;
+  font-size: 0.88rem;
   color: var(--muted);
-  margin-top: 0.2rem;
 }
 
-.bd-content {
-  padding: 1.5rem;
-  flex: 1;
-}
-
-/* ============================================
-   TAB NAV (mobile horizontal)
-   ============================================ */
-.bd-tab-row {
-  display: flex;
-  gap: 0.4rem;
-  overflow-x: auto;
-  padding-bottom: 0.25rem;
-  margin-bottom: 1rem;
+.sync-info {
+  margin-left: 8px;
+  font-weight: 600;
+  color: var(--primary);
 }
 
 /* ============================================
-   BOOKING CARDS
+   STATS GRID
    ============================================ */
-.bd-booking-list {
+.stats-grid {
   display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
   gap: 1rem;
 }
 
-.bd-booking-card {
+.stat-card {
+  padding: 1.25rem;
   background: var(--surface);
   border-radius: 12px;
-  border: 1px solid var(--border);
-  padding: 1.25rem;
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  grid-template-rows: auto auto;
-  gap: 0.5rem 1.25rem;
-  align-items: start;
-  box-shadow: 0 2px 12px rgba(9, 29, 46, 0.04);
-  transition: transform 0.16s, box-shadow 0.16s;
   border-left: 4px solid var(--border);
+  box-shadow: 0 2px 16px rgba(9, 29, 46, 0.04);
+  transition: transform 0.18s, box-shadow 0.18s;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(9, 29, 46, 0.08);
+  }
+
+  &.accent-primary { border-left-color: var(--primary); }
+  &.accent-amber   { border-left-color: var(--warning); }
+  &.accent-success { border-left-color: var(--success); }
 }
 
-.bd-booking-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(9, 29, 46, 0.08);
-}
-
-.bd-booking-card.bd-status-pending   { border-left-color: var(--warning); }
-.bd-booking-card.bd-status-confirmed { border-left-color: var(--info); }
-.bd-booking-card.bd-status-completed { border-left-color: var(--success); }
-.bd-booking-card.bd-status-cancelled { border-left-color: var(--error); opacity: 0.65; }
-
-.bd-booking-time {
-  font-family: 'Manrope', sans-serif;
-  font-size: 1.5rem;
+.stat-label {
+  font-size: 0.72rem;
   font-weight: 800;
-  color: var(--primary);
-  min-width: 5rem;
-  letter-spacing: -0.02em;
-}
-
-.bd-booking-body {
-  min-width: 0;
-}
-
-.bd-booking-customer {
-  font-size: 1rem;
-  font-weight: 700;
-  color: var(--on-surface);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.bd-booking-service {
-  font-size: 0.85rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
   color: var(--muted);
-  margin-top: 0.2rem;
 }
 
-.bd-booking-phone,
-.bd-booking-date {
-  font-size: 0.78rem;
-  color: var(--secondary);
-  margin-top: 0.15rem;
-}
-
-.bd-booking-meta {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 0.4rem;
-}
-
-.bd-price {
+.stat-value {
+  font-size: 1.75rem;
   font-family: 'Manrope', sans-serif;
-  font-size: 1rem;
   font-weight: 800;
-  color: var(--primary);
+  margin: 0.35rem 0;
+  color: var(--on-surface);
 }
 
-.bd-booking-actions {
-  grid-column: 1 / -1;
-  display: flex;
-  gap: 0.5rem;
-  padding-top: 0.5rem;
-  border-top: 1px solid #f1f5f9;
+.stat-sub {
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--muted);
 }
 
 /* ============================================
-   BADGES
+   FILTER & TABS
    ============================================ */
-.bd-badge {
+.filter-bar {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.status-tabs {
+  display: flex;
+  background: #edf2ff;
+  padding: 0.3rem;
+  border-radius: 12px;
+  gap: 0.25rem;
+}
+
+.status-tab {
+  padding: 0.55rem 1rem;
+  border: none;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.16s;
+  white-space: nowrap;
+
+  &.active {
+    background: var(--surface);
+    color: var(--primary);
+    box-shadow: 0 4px 12px rgba(9, 29, 46, 0.08);
+  }
+}
+
+.btn-refresh {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover {
+    background: var(--primary-light);
+    transform: rotate(180deg);
+  }
+}
+
+/* ============================================
+   DATA TABLE
+   ============================================ */
+.data-table-wrap {
+  background: var(--surface);
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(9, 29, 46, 0.04);
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+
+  thead tr {
+    background: #f1f5f9;
+    border-bottom: 1px solid var(--border);
+  }
+
+  th {
+    padding: 1rem;
+    text-align: left;
+    font-family: 'Manrope', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    color: var(--muted);
+    letter-spacing: 0.05em;
+  }
+
+  td {
+    padding: 1rem;
+    border-bottom: 1px solid #f1f5f9;
+    vertical-align: middle;
+  }
+
+  tbody tr:hover {
+    background: #f8fafc;
+  }
+
+  .time-cell {
+    font-family: 'Manrope', sans-serif;
+    font-weight: 700;
+    color: var(--primary);
+  }
+
+  .customer-name {
+    font-weight: 600;
+    color: var(--on-surface);
+  }
+}
+
+/* ============================================
+   BADGES & BUTTONS
+   ============================================ */
+.badge {
   display: inline-block;
-  padding: 0.28rem 0.65rem;
+  padding: 0.3rem 0.75rem;
   border-radius: 6px;
   font-size: 0.75rem;
   font-weight: 700;
   white-space: nowrap;
+
+  &.bd-badge-warning { background: var(--warning-light); color: var(--warning); }
+  &.bd-badge-info    { background: var(--info-light);    color: var(--info); }
+  &.bd-badge-success { background: var(--success-light); color: var(--success); }
+  &.bd-badge-error   { background: var(--error-light);   color: var(--error); }
 }
 
-.bd-badge-success  { background: var(--success-light); color: var(--success); }
-.bd-badge-error    { background: var(--error-light);   color: var(--error); }
-.bd-badge-warning  { background: var(--warning-light); color: var(--warning); }
-.bd-badge-info     { background: var(--info-light);    color: var(--info); }
-
-/* ============================================
-   BUTTONS
-   ============================================ */
-.bd-btn-primary {
-  padding: 0.55rem 1rem;
-  border: none;
+.btn-sm {
+  padding: 0.45rem 0.85rem;
   border-radius: 8px;
-  background: var(--primary);
-  color: #fff;
-  font-family: 'Manrope', sans-serif;
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   font-weight: 700;
+  font-family: 'Manrope', sans-serif;
   cursor: pointer;
-  transition: background 0.16s, transform 0.12s;
-}
-.bd-btn-primary:hover { background: var(--primary-dark); transform: translateY(-1px); }
-.bd-btn-primary:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
-
-.bd-btn-success {
-  padding: 0.55rem 1rem;
   border: none;
-  border-radius: 8px;
-  background: var(--success);
-  color: #fff;
-  font-family: 'Manrope', sans-serif;
-  font-size: 0.85rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition: opacity 0.16s, transform 0.12s;
-}
-.bd-btn-success:hover { opacity: 0.85; transform: translateY(-1px); }
-.bd-btn-success:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+  transition: all 0.2s;
 
-.bd-btn-outline {
-  padding: 0.6rem 1.1rem;
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  background: transparent;
-  color: var(--secondary);
-  font-family: 'Inter', sans-serif;
-  font-size: 0.85rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.16s;
+  &.btn-primary { background: var(--primary); color: #fff; }
+  &.btn-primary:hover { background: var(--primary-dark); }
+  
+  &.btn-success { background: var(--success); color: #fff; }
+  &.btn-success:hover { opacity: 0.9; }
+
+  &:disabled { opacity: 0.5; cursor: not-allowed; }
 }
-.bd-btn-outline:hover { border-color: var(--primary); color: var(--primary); }
 
 /* ============================================
    DATE PICKER
    ============================================ */
-.bd-date-picker {
-  margin-bottom: 1.25rem;
-}
-
-.bd-date-label {
+.date-picker-mini {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  font-size: 0.88rem;
-  font-weight: 700;
-  color: var(--secondary);
-}
-
-.bd-date-input {
-  padding: 0.6rem 0.9rem;
+  padding: 0.5rem 1rem;
+  background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 10px;
-  background: var(--surface);
-  font-family: 'Inter', sans-serif;
-  font-size: 0.88rem;
-  color: var(--on-surface);
-  outline: none;
-  transition: border-color 0.16s, box-shadow 0.16s;
-  cursor: pointer;
-}
+  width: fit-content;
 
-.bd-date-input:focus {
-  border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(0, 99, 98, 0.12);
-}
-
-/* ============================================
-   EMPTY STATES
-   ============================================ */
-.bd-empty {
-  text-align: center;
-  padding: 4rem 2rem;
-  background: var(--surface);
-  border-radius: 12px;
-  border: 1px dashed var(--border);
-}
-
-.bd-empty-title {
-  font-family: 'Manrope', sans-serif;
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: var(--on-surface);
-  margin-bottom: 0.5rem;
-}
-
-.bd-empty-sub {
-  font-size: 0.88rem;
-  color: var(--muted);
+  span { font-size: 0.85rem; font-weight: 700; color: var(--muted); }
+  
+  input {
+    border: none;
+    background: transparent;
+    font-family: inherit;
+    font-weight: 600;
+    color: var(--on-surface);
+    outline: none;
+    cursor: pointer;
+  }
 }
 
 /* ============================================
-   LOADING / ERROR STATES
+   STATES
    ============================================ */
-.bd-state {
+.cms-state {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1rem;
-  padding: 3rem;
+  justify-content: center;
+  padding: 4rem 2rem;
   text-align: center;
+  gap: 1.25rem;
 }
 
-.bd-state-error { color: var(--error); }
-
-.bd-spinner {
-  width: 2.2rem;
-  height: 2.2rem;
-  border: 3px solid var(--primary-light);
+.cms-spinner {
+  width: 2.5rem;
+  height: 2.5rem;
+  border: 4px solid var(--primary-light);
   border-top-color: var(--primary);
   border-radius: 50%;
-  animation: spin 0.75s linear infinite;
+  animation: spin 0.8s linear infinite;
 }
 
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
+@keyframes spin { to { transform: rotate(360deg); } }
 
-/* ============================================
-   RESPONSIVE
-   ============================================ */
-@media (min-width: 768px) {
-  .bd-sidebar {
-    display: flex;
-  }
-
-  .bd-main {
-    margin-left: var(--sidebar-w);
-  }
-
-  .bd-booking-card {
-    grid-template-columns: auto 1fr auto;
-    grid-template-rows: auto auto;
-  }
-}
-
-@media (min-width: 1024px) {
-  .bd-booking-list {
-    grid-template-columns: repeat(auto-fill, minmax(460px, 1fr));
-  }
-}
-
-@media (max-width: 479px) {
-  .bd-booking-card {
-    grid-template-columns: 1fr;
-  }
-
-  .bd-booking-time {
-    font-size: 1.2rem;
-  }
-
-  .bd-booking-meta {
-    flex-direction: row;
-    align-items: center;
-  }
+.bd-empty {
+  text-align: center;
+  padding: 4rem 2rem;
+  color: var(--muted);
+  
+  h3 { font-size: 1.1rem; color: var(--on-surface); margin-bottom: 0.5rem; }
 }

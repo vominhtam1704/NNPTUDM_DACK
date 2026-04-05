@@ -25,10 +25,8 @@ const getNavItems = (role) => {
   if (role === 'barber') {
     return [
       ...common,
-      { icon: 'dashboard', label: 'Barber Dash', to: '/barber' },
-      { icon: 'content_cut', label: 'Dịch vụ', to: '/booking' },
-      { icon: 'event_note', label: 'Lịch hẹn', to: '/profile' },
-      { icon: 'account_circle', label: 'Profile', to: '/account' },
+      { icon: 'dashboard', label: 'Dashboard', to: '/barber' },
+      { icon: 'account_circle', label: 'Hồ sơ', to: '/account' },
     ];
   }
 

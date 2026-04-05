@@ -56,13 +56,6 @@ router.post(
 );
 
 /**
- * @route   PUT /api/reservations/:id
- * @desc    Update reservation
- * @access  Protected
- */
-router.put('/:id', authenticateToken, reservationController.updateReservation);
-
-/**
  * @route   PUT /api/reservations/:id/confirm
  * @desc    Confirm reservation (after payment)
  * @access  Protected (Admin/Barber)
@@ -73,6 +66,25 @@ router.put(
   authorizeRole([ROLES.ADMIN, ROLES.BARBER]),
   reservationController.confirmReservation
 );
+
+/**
+ * @route   PUT /api/reservations/:id/complete
+ * @desc    Complete reservation
+ * @access  Protected (Admin/Barber)
+ */
+router.put(
+  '/:id/complete',
+  authenticateToken,
+  authorizeRole([ROLES.ADMIN, ROLES.BARBER]),
+  reservationController.completeReservation
+);
+
+/**
+ * @route   PUT /api/reservations/:id
+ * @desc    Update reservation
+ * @access  Protected
+ */
+router.put('/:id', authenticateToken, reservationController.updateReservation);
 
 /**
  * @route   PUT /api/reservations/:id/cancel

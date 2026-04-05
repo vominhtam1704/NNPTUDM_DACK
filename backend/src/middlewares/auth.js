@@ -33,7 +33,10 @@ const authorizeRole = (allowedRoles = []) => {
       return res.status(401).json(formatError('Unauthorized', 401));
     }
 
+    console.log(`[AUTH DEBUG] User Role: "${req.user.role}", Allowed Roles: ${JSON.stringify(allowedRoles)}`);
+
     if (!allowedRoles.includes(req.user.role)) {
+      console.log(`[AUTH DEBUG] Permission Denied for user ${req.user.userId}`);
       return res.status(403).json(
         formatError('Forbidden: insufficient permissions', 403)
       );
