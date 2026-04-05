@@ -99,10 +99,17 @@ const BookingCompletePage = () => {
                 biên nhận thanh toán đến email của bạn.
               </p>
 
-              {isTransfer && paymentInfo?.qrUrl && (
+              {isTransfer && paymentInfo && (
                 <div className="qr-section">
                   <div className="qr-container">
-                    <img alt="QR Code SePay" src={paymentInfo.qrUrl} />
+                    <img 
+                      alt="QR Code SePay" 
+                      src={
+                        paymentInfo.qrUrl?.includes('undefined') || paymentInfo.qrUrl?.includes('MBBank')
+                          ? `https://qr.sepay.vn/img?acc=${paymentInfo.accountNumber || '0334088130'}&bank=${(paymentInfo.bankCode === 'MBBank' || !paymentInfo.bankCode) ? 'MB' : paymentInfo.bankCode}&amount=${Math.floor(paymentInfo.amount || 0)}&des=${encodeURIComponent(paymentInfo.referenceCode || '')}&template=compact`
+                          : paymentInfo.qrUrl
+                      } 
+                    />
                   </div>
                   <div className="qr-instructions">
                     <p>Vui lòng quét mã QR trên để thanh toán.</p>
