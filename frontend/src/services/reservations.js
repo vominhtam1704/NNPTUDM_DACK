@@ -34,6 +34,7 @@ export const cancelReservation = async (reservationId, payload = {}) => {
 // Admin
 export const getAllReservations = async (params = {}) => {
   const response = await apiClient.get('/reservations', { params });
+  console.log('getAllReservations response:', response);
   return response;
 };
 

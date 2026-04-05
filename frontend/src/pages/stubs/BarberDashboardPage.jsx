@@ -143,10 +143,10 @@ function BarberDashboardPage() {
     <tr key={r._id}>
       <td className="time-cell">{formatTime(r.appointmentTime)}</td>
       <td className="customer-name">
-        <div>{r.customer?.name || 'Khách hàng'}</div>
-        <div style={{ fontSize: '0.75rem', color: 'var(--muted)', fontWeight: 500 }}>{r.customer?.phone || ''}</div>
+        <div>{r.customerId?.name || 'Khách hàng'}</div>
+        <div style={{ fontSize: '0.75rem', color: 'var(--muted)', fontWeight: 500 }}>{r.customerId?.phone || ''}</div>
       </td>
-      <td>{r.service?.name || '—'}</td>
+      <td>{r.serviceId?.name || '—'}</td>
       <td>{formatDate(r.appointmentDate)}</td>
       <td>
         <span className={`badge ${STATUS_CLASS[r.status] || ''}`}>{STATUS_LABEL[r.status] || r.status}</span>

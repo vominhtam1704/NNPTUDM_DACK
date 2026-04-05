@@ -12,10 +12,11 @@ const { APPOINTMENT_STATUS } = require('../config/constants');
 /**
  * Get All Reservations - GET /reservations
  * Admin only - list all reservations with filters
+ * Supports search by customer name, barber name, service name
  */
 exports.getAllReservations = async (req, res) => {
   try {
-    const { page = 1, limit = 10, barberId, customerId, status, dateFrom, dateTo } = req.query;
+    const { page = 1, limit = 10, barberId, customerId, customerName, barberName, serviceName, status, dateFrom, dateTo } = req.query;
     const skip = (page - 1) * limit;
 
     // ===== BUILD FILTER =====
@@ -23,13 +24,134 @@ exports.getAllReservations = async (req, res) => {
     if (barberId) filter.barberId = barberId;
     if (customerId) filter.customerId = customerId;
     if (status) filter.status = status;
+    
+    // ===== SET DATE RANGE (default to today onwards if not specified) =====
     if (dateFrom || dateTo) {
       filter.appointmentDate = {};
       if (dateFrom) filter.appointmentDate.$gte = new Date(dateFrom);
       if (dateTo) filter.appointmentDate.$lte = new Date(dateTo);
+    } else {
+      // Default: today onwards
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      filter.appointmentDate = { $gte: today };
     }
 
-    // ===== FETCH DATA =====
+    // ===== HANDLE NAME SEARCH (customerName, barberName, serviceName) =====
+    // For name searches, we need to use aggregation pipeline for case-insensitive regex matching
+    if (customerName || barberName || serviceName) {
+      // ===== USE AGGREGATION FOR TEXT SEARCH =====
+      const pipeline = [
+        {
+          $lookup: {
+            from: 'users',
+            localField: 'customerId',
+            foreignField: '_id',
+            as: 'customerData'
+          }
+        },
+        {
+          $lookup: {
+            from: 'users',
+            localField: 'barberId',
+            foreignField: '_id',
+            as: 'barberData'
+          }
+        },
+        {
+          $lookup: {
+            from: 'products',
+            localField: 'serviceId',
+            foreignField: '_id',
+            as: 'serviceData'
+          }
+        },
+        {
+          $addFields: {
+            customerName: { $arrayElemAt: ['$customerData.name', 0] },
+            barberName: { $arrayElemAt: ['$barberData.name', 0] },
+            serviceName: { $arrayElemAt: ['$serviceData.name', 0] }
+          }
+        },
+        {
+          $match: {
+            ...(filter),
+            ...(customerName && { customerName: { $regex: customerName, $options: 'i' } }),
+            ...(barberName && { barberName: { $regex: barberName, $options: 'i' } }),
+            ...(serviceName && { serviceName: { $regex: serviceName, $options: 'i' } })
+          }
+        },
+        { $sort: { appointmentDate: 1 } },
+        { $skip: skip },
+        { $limit: parseInt(limit) }
+      ];
+
+      const reservations = await Reservation.aggregate(pipeline);
+      
+      // Get total count with same filter
+      const countPipeline = [
+        {
+          $lookup: {
+            from: 'users',
+            localField: 'customerId',
+            foreignField: '_id',
+            as: 'customerData'
+          }
+        },
+        {
+          $lookup: {
+            from: 'users',
+            localField: 'barberId',
+            foreignField: '_id',
+            as: 'barberData'
+          }
+        },
+        {
+          $lookup: {
+            from: 'products',
+            localField: 'serviceId',
+            foreignField: '_id',
+            as: 'serviceData'
+          }
+        },
+        {
+          $addFields: {
+            customerName: { $arrayElemAt: ['$customerData.name', 0] },
+            barberName: { $arrayElemAt: ['$barberData.name', 0] },
+            serviceName: { $arrayElemAt: ['$serviceData.name', 0] }
+          }
+        },
+        {
+          $match: {
+            ...(filter),
+            ...(customerName && { customerName: { $regex: customerName, $options: 'i' } }),
+            ...(barberName && { barberName: { $regex: barberName, $options: 'i' } }),
+            ...(serviceName && { serviceName: { $regex: serviceName, $options: 'i' } })
+          }
+        },
+        { $count: 'total' }
+      ];
+
+      const countResult = await Reservation.aggregate(countPipeline);
+      const total = countResult[0]?.total || 0;
+
+      // Now populate the full details for each result
+      const populatedReservations = await Promise.all(
+        reservations.map(r => 
+          Reservation.findById(r._id)
+            .populate('barberId', 'name email phone avatar')
+            .populate('customerId', 'name email phone avatar')
+            .populate('serviceId', 'name price duration')
+            .populate('paymentId')
+        )
+      );
+
+      return res.status(200).json(
+        formatPaginated(populatedReservations, page, limit, total)
+      );
+    }
+
+    // ===== DEFAULT FETCH (no name search) =====
     const reservations = await Reservation.find(filter)
       .populate('barberId', 'name email phone avatar')
       .populate('customerId', 'name email phone avatar')
@@ -37,7 +159,7 @@ exports.getAllReservations = async (req, res) => {
       .populate('paymentId')
       .skip(skip)
       .limit(parseInt(limit))
-      .sort({ appointmentDate: -1 });
+      .sort({ appointmentDate: 1, appointmentTime: 1 });
 
     const total = await Reservation.countDocuments(filter);
 
@@ -473,19 +595,37 @@ exports.getAvailableSlots = async (req, res) => {
 
 /**
  * Get My Reservations - GET /reservations/my-bookings
- * Customer views their own reservations
+ * Customer or Barber views their own reservations
+ * - Customer sees bookings where they are customerId
+ * - Barber sees bookings where they are barberId
  */
 exports.getMyReservations = async (req, res) => {
   try {
-    const customerId = req.user.userId;
+    const userId = req.user.userId;
     const { page = 1, limit = 10, status } = req.query;
     const skip = (page - 1) * limit;
 
-    const filter = { customerId };
+    // Fetch user to determine role
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json(
+        formatError('User not found')
+      );
+    }
+
+    const filter = {};
+    // If barber, filter by barberId; if customer, filter by customerId
+    if (user.role === 'barber') {
+      filter.barberId = userId;
+    } else {
+      filter.customerId = userId;
+    }
+
     if (status) filter.status = status;
 
     const reservations = await Reservation.find(filter)
       .populate('barberId', 'name email phone avatar')
+      .populate('customerId', 'name email phone avatar')
       .populate('serviceId', 'name price duration')
       .skip(skip)
       .limit(parseInt(limit))

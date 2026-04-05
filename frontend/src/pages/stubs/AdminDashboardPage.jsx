@@ -257,40 +257,60 @@ function AnalyticsTab() {
 // ─── TAB 1: APPOINTMENTS ─────────────────────────────────────
 function AppointmentsTab() {
   const [list, setList] = useState([]);
+  const [pagination, setPagination] = useState({ page: 1, limit: 10, total: 0, pages: 1 });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [search, setSearch] = useState('');
   const [actionLoading, setActionLoading] = useState('');
+  const [fromDate, setFromDate] = useState('');
+  const [toDate, setToDate] = useState('');
+  const [jumpPage, setJumpPage] = useState('');
 
-  const load = useCallback(async () => {
+  const load = useCallback(async (pageNum = 1) => {
     setLoading(true);
     setError('');
     try {
-      const res = await getAllReservations();
-      // Extract array from standard response
+      const params = { page: pageNum, limit: 10 };
+      if (statusFilter !== 'all') params.status = statusFilter;
+      if (fromDate) params.dateFrom = fromDate;
+      if (toDate) params.dateTo = toDate;
+      // Send search to backend for better filtering
+      if (search) params.customerName = search;
+      
+      const res = await getAllReservations(params);
+      // Extract data and pagination from standard response
       const data = Array.isArray(res) ? res : (res?.data || res?.reservations || []);
+      const rawPagination = res?.pagination;
+      
+      console.log('Response received:', { res, data, rawPagination });
+      
+      // Ensure all pagination values are numbers, not strings
+      const paginationInfo = {
+        page: Math.max(1, parseInt(rawPagination?.page || pageNum, 10)),
+        limit: parseInt(rawPagination?.limit || 10, 10),
+        total: parseInt(rawPagination?.total || 0, 10),
+        pages: Math.max(1, parseInt(rawPagination?.pages || 1, 10))
+      };
+      
+      console.log('Pagination info set to:', paginationInfo);
+      
       setList(data);
+      setPagination(paginationInfo);
     } catch (e) {
       setError(e.message || 'Không thể tải lịch hẹn');
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [statusFilter, fromDate, toDate, search]);
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => { 
+    // Reset to page 1 when filters change
+    load(1);
+  }, [load]);
 
-  const filtered = useMemo(() => {
-    return list.filter((r) => {
-      const matchStatus = statusFilter === 'all' || r.status === statusFilter;
-      const q = search.toLowerCase();
-      const matchSearch = !q ||
-        (r.customer?.name || '').toLowerCase().includes(q) ||
-        (r.barber?.name || '').toLowerCase().includes(q) ||
-        (r.service?.name || '').toLowerCase().includes(q);
-      return matchStatus && matchSearch;
-    });
-  }, [list, statusFilter, search]);
+  // Don't filter again - backend already handles search
+  const filtered = list;
 
   const handleAction = async (action, id) => {
     setActionLoading(`${action}-${id}`);
@@ -298,7 +318,7 @@ function AppointmentsTab() {
       if (action === 'confirm') await confirmReservation(id);
       else if (action === 'cancel') await cancelReservation(id);
       else if (action === 'complete') await updateReservation(id, { status: 'completed' });
-      await load();
+      await load(pagination.page);
     } catch (e) {
       alert(e.message || 'Thao tác thất bại');
     } finally {
@@ -310,14 +330,24 @@ function AppointmentsTab() {
     downloadCsv('lich-hen.csv', [
       ['Khách hàng', 'Thợ cắt', 'Dịch vụ', 'Ngày hẹn', 'Giờ hẹn', 'Trạng thái'],
       ...filtered.map((r) => [
-        r.customer?.name || '',
-        r.barber?.name || '',
-        r.service?.name || '',
+        r.customerId?.name || '',
+        r.barberId?.name || '',
+        r.serviceId?.name || '',
         r.appointmentDate || '',
         r.appointmentTime || '',
         STATUS_LABEL[r.status] || r.status,
       ]),
     ]);
+  };
+
+  const handleJumpToPage = () => {
+    const pageNum = parseInt(jumpPage, 10);
+    if (!isNaN(pageNum) && pageNum > 0 && pageNum <= pagination.pages) {
+      load(pageNum);
+      setJumpPage('');
+    } else {
+      alert(`Vui lòng nhập số trang từ 1 đến ${pagination.pages}`);
+    }
   };
 
   return (
@@ -338,6 +368,35 @@ function AppointmentsTab() {
           type="text"
           value={search}
         />
+        <div className="date-filter" style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', whiteSpace: 'nowrap' }}>
+            <span style={{ fontSize: '0.875rem' }}>Từ ngày:</span>
+            <input
+              type="date"
+              onChange={(e) => setFromDate(e.target.value)}
+              value={fromDate}
+              style={{ padding: '0.5rem', borderRadius: '0.25rem', border: '1px solid #ccc' }}
+            />
+          </label>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', whiteSpace: 'nowrap' }}>
+            <span style={{ fontSize: '0.875rem' }}>Đến ngày:</span>
+            <input
+              type="date"
+              onChange={(e) => setToDate(e.target.value)}
+              value={toDate}
+              style={{ padding: '0.5rem', borderRadius: '0.25rem', border: '1px solid #ccc' }}
+            />
+          </label>
+          {(fromDate || toDate) && (
+            <button
+              onClick={() => { setFromDate(''); setToDate(''); }}
+              style={{ padding: '0.5rem 1rem', fontSize: '0.875rem', background: 'none', border: '1px solid #999', borderRadius: '0.25rem', cursor: 'pointer' }}
+              type="button"
+            >
+              Xóa bộ lọc
+            </button>
+          )}
+        </div>
         <div className="status-tabs">
           {['all', 'pending', 'confirmed', 'completed', 'cancelled'].map((s) => (
             <button
@@ -353,71 +412,126 @@ function AppointmentsTab() {
       </div>
 
       {loading && <LoadingState />}
-      {!loading && error && <ErrorState message={error} onRetry={load} />}
+      {!loading && error && <ErrorState message={error} onRetry={() => load(pagination.page)} />}
       {!loading && !error && (
-        <div className="data-table-wrap">
-          <table className="data-table">
-            <thead>
-              <tr>
-                <th>Khách hàng</th>
-                <th>Thợ cắt</th>
-                <th>Dịch vụ</th>
-                <th>Ngày hẹn</th>
-                <th>Giờ</th>
-                <th>Trạng thái</th>
-                <th>Thao tác</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.length === 0 ? (
-                <tr><td className="empty-cell" colSpan={7}>Không tìm thấy lịch hẹn nào</td></tr>
-              ) : filtered.map((r) => (
-                <tr key={r._id}>
-                  <td>{r.customer?.name || '—'}</td>
-                  <td>{r.barber?.name || '—'}</td>
-                  <td>{r.service?.name || '—'}</td>
-                  <td>{r.appointmentDate ? new Date(r.appointmentDate).toLocaleDateString('vi-VN') : '—'}</td>
-                  <td>{r.appointmentTime || '—'}</td>
-                  <td><span className={`badge ${STATUS_CLASS[r.status] || ''}`}>{STATUS_LABEL[r.status] || r.status}</span></td>
-                  <td>
-                    <div className="action-btns">
-                      {r.status === 'pending' && (
-                        <button
-                          className="btn-sm btn-primary"
-                          disabled={!!actionLoading}
-                          onClick={() => handleAction('confirm', r._id)}
-                          type="button"
-                        >
-                          {actionLoading === `confirm-${r._id}` ? '...' : 'Xác nhận'}
-                        </button>
-                      )}
-                      {r.status === 'confirmed' && (
-                        <button
-                          className="btn-sm btn-success"
-                          disabled={!!actionLoading}
-                          onClick={() => handleAction('complete', r._id)}
-                          type="button"
-                        >
-                          {actionLoading === `complete-${r._id}` ? '...' : 'Hoàn thành'}
-                        </button>
-                      )}
-                      {(r.status === 'pending' || r.status === 'confirmed') && (
-                        <button
-                          className="btn-sm btn-danger"
-                          disabled={!!actionLoading}
-                          onClick={() => handleAction('cancel', r._id)}
-                          type="button"
-                        >
-                          {actionLoading === `cancel-${r._id}` ? '...' : 'Hủy'}
-                        </button>
-                      )}
-                    </div>
-                  </td>
+        <>
+          <div className="data-table-wrap">
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th>Khách hàng</th>
+                  <th>Thợ cắt</th>
+                  <th>Dịch vụ</th>
+                  <th>Ngày hẹn</th>
+                  <th>Giờ</th>
+                  <th>Trạng thái</th>
+                  <th>Thao tác</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {filtered.length === 0 ? (
+                  <tr><td className="empty-cell" colSpan={7}>Không tìm thấy lịch hẹn nào</td></tr>
+                ) : filtered.map((r) => (
+                  <tr key={r._id}>
+                    <td>{r.customerId?.name || '—'}</td>
+                    <td>{r.barberId?.name || '—'}</td>
+                    <td>{r.serviceId?.name || '—'}</td>
+                    <td>{r.appointmentDate ? new Date(r.appointmentDate).toLocaleDateString('vi-VN') : '—'}</td>
+                    <td>{r.appointmentTime || '—'}</td>
+                    <td><span className={`badge ${STATUS_CLASS[r.status] || ''}`}>{STATUS_LABEL[r.status] || r.status}</span></td>
+                    <td>
+                      <div className="action-btns">
+                        {r.status === 'pending' && (
+                          <button
+                            className="btn-sm btn-primary"
+                            disabled={!!actionLoading}
+                            onClick={() => handleAction('confirm', r._id)}
+                            type="button"
+                          >
+                            {actionLoading === `confirm-${r._id}` ? '...' : 'Xác nhận'}
+                          </button>
+                        )}
+                        {r.status === 'confirmed' && (
+                          <button
+                            className="btn-sm btn-success"
+                            disabled={!!actionLoading}
+                            onClick={() => handleAction('complete', r._id)}
+                            type="button"
+                          >
+                            {actionLoading === `complete-${r._id}` ? '...' : 'Hoàn thành'}
+                          </button>
+                        )}
+                        {(r.status === 'pending' || r.status === 'confirmed') && (
+                          <button
+                            className="btn-sm btn-danger"
+                            disabled={!!actionLoading}
+                            onClick={() => handleAction('cancel', r._id)}
+                            type="button"
+                          >
+                            {actionLoading === `cancel-${r._id}` ? '...' : 'Hủy'}
+                          </button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Pagination Controls */}
+          {pagination.pages > 1 && (
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '1rem', marginTop: '1.5rem', padding: '1rem', flexWrap: 'wrap' }}>
+              <button
+                disabled={pagination.page <= 1}
+                onClick={() => {
+                  const prevPage = Math.max(pagination.page - 1, 1);
+                  console.log('Clicking prev, current page:', pagination.page, 'prev page:', prevPage);
+                  load(prevPage);
+                }}
+                style={{ padding: '0.5rem 1rem', cursor: pagination.page <= 1 ? 'not-allowed' : 'pointer', opacity: pagination.page <= 1 ? 0.5 : 1 }}
+                type="button"
+              >
+                ← Trước
+              </button>
+              <span style={{ fontSize: '0.875rem', color: '#666', minWidth: '200px', textAlign: 'center' }}>
+                Trang {pagination.page} / {pagination.pages} (Tổng: {pagination.total} bản ghi)
+              </span>
+              <button
+                disabled={pagination.page >= pagination.pages}
+                onClick={() => {
+                  const nextPage = Math.min(pagination.page + 1, pagination.pages);
+                  console.log('Clicking next, current page:', pagination.page, 'next page:', nextPage, 'total pages:', pagination.pages);
+                  load(nextPage);
+                }}
+                style={{ padding: '0.5rem 1rem', cursor: pagination.page >= pagination.pages ? 'not-allowed' : 'pointer', opacity: pagination.page >= pagination.pages ? 0.5 : 1 }}
+                type="button"
+              >
+                Sau →
+              </button>
+              <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                <label style={{ fontSize: '0.875rem', color: '#666' }}>Đi đến trang:</label>
+                <input
+                  type="number"
+                  min="1"
+                  max={pagination.pages}
+                  value={jumpPage}
+                  onChange={(e) => setJumpPage(e.target.value)}
+                  onKeyPress={(e) => e.key === 'Enter' && handleJumpToPage()}
+                  placeholder="số trang"
+                  style={{ width: '60px', padding: '0.4rem', borderRadius: '0.25rem', border: '1px solid #ccc', fontSize: '0.875rem' }}
+                />
+                <button
+                  onClick={handleJumpToPage}
+                  style={{ padding: '0.4rem 0.8rem', fontSize: '0.875rem', cursor: 'pointer' }}
+                  type="button"
+                >
+                  Go
+                </button>
+              </div>
+            </div>
+          )}
+        </>
       )}
     </section>
   );
