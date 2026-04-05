@@ -10,7 +10,8 @@ import { getCategories, createCategory, updateCategory, deleteCategory } from '.
 import { getInventory, createInventoryItem, updateInventoryItem, deleteInventoryItem, adjustStock } from '../../services/inventory';
 import { getAllUsers, updateUser, deleteUser } from '../../services/users';
 import { getRoles } from '../../services/roles';
-import PageLayout from '../../components/PageLayout';
+import { getAllVouchers, createVoucher, updateVoucher, deleteVoucher } from '../../services/vouchers';
+import { getAssetUrl } from '../../utils/url';
 import '../AdminDashboardPage.scss';
 
 // ─── Utilities ───────────────────────────────────────────────
@@ -97,7 +98,7 @@ function AnalyticsTab() {
         ? { startDate: customStart, endDate: customEnd }
         : { range };
       const res = await getAnalyticsOverview(params);
-      setData(res);
+      setData(res?.data || res);
     } catch (e) {
       setError(e.message || 'Không thể tải báo cáo');
     } finally {
@@ -267,7 +268,9 @@ function AppointmentsTab() {
     setError('');
     try {
       const res = await getAllReservations();
-      setList(Array.isArray(res) ? res : (res?.reservations || []));
+      // Extract array from standard response
+      const data = Array.isArray(res) ? res : (res?.data || res?.reservations || []);
+      setList(data);
     } catch (e) {
       setError(e.message || 'Không thể tải lịch hẹn');
     } finally {
@@ -440,12 +443,19 @@ function ProductsTab() {
 
   const load = useCallback(async () => {
     setLoading(true);
+    setError('');
     try {
       const [pRes, cRes] = await Promise.all([getProducts(), getCategories()]);
-      setList(Array.isArray(pRes) ? pRes : (pRes?.products || []));
-      setCats(Array.isArray(cRes) ? cRes : (cRes?.categories || []));
+
+      // Standard response parsing
+      const productList = Array.isArray(pRes) ? pRes : (pRes?.data || pRes?.products || []);
+      const categoryList = Array.isArray(cRes) ? cRes : (cRes?.data || cRes?.categories || []);
+
+      setList(productList);
+      setCats(categoryList);
     } catch (e) {
-      setError(e.message || 'Không thể tải dịch vụ');
+      console.error('ProductsTab load error:', e);
+      setError(e.message || 'Không thể tải dữ liệu dịch vụ');
     } finally {
       setLoading(false);
     }
@@ -514,10 +524,10 @@ function ProductsTab() {
         <div className="product-grid">
           {filtered.length === 0 ? <p className="empty-text">Chưa có dịch vụ nào.</p> : filtered.map((p) => (
             <div className="product-card" key={p._id}>
-              {p.image && <img alt={p.name} className="product-img" src={p.image} />}
-              {!p.image && <div className="product-img-placeholder">{(p.name || 'S')[0].toUpperCase()}</div>}
+              {p.thumbnail && <img alt={p.name} className="product-img" src={getAssetUrl(p.thumbnail)} onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }} />}
+              <div className="product-img-placeholder" style={{ display: p.thumbnail ? 'none' : 'flex' }}>{(p.name || 'S')[0].toUpperCase()}</div>
               <div className="product-body">
-                <p className="product-cat">{p.category?.name || '—'}</p>
+                <p className="product-cat">{p.categoryId?.name || '—'}</p>
                 <h4 className="product-name">{p.name}</h4>
                 <p className="product-price">{formatCurrency(p.price)}</p>
                 <p className="product-dur">{p.duration ? `${p.duration} phút` : ''}</p>
@@ -552,7 +562,7 @@ function ProductsTab() {
                 </label>
                 <label className="form-field span-2">
                   <span>Danh mục</span>
-                  <select onChange={(e) => setForm((f) => ({ ...f, categoryId: e.target.value })) } value={form.categoryId}>
+                  <select onChange={(e) => setForm((f) => ({ ...f, categoryId: e.target.value }))} value={form.categoryId}>
                     <option value="">-- Chọn danh mục --</option>
                     {cats.map((c) => <option key={c._id} value={c._id}>{c.name}</option>)}
                   </select>
@@ -606,7 +616,9 @@ function CategoriesTab() {
     setLoading(true);
     try {
       const res = await getCategories();
-      setList(Array.isArray(res) ? res : (res?.categories || []));
+      // Standard response parsing
+      const categoryList = Array.isArray(res) ? res : (res?.data || res?.categories || []);
+      setList(categoryList);
     } catch (e) {
       setError(e.message || 'Không thể tải danh mục');
     } finally {
@@ -743,7 +755,9 @@ function InventoryTab() {
     setError('');
     try {
       const res = await getInventory(showLowOnly ? { lowStock: true } : {});
-      setList(Array.isArray(res) ? res : (res?.items || res?.inventories || []));
+      // Standard response parsing
+      const inventoryList = Array.isArray(res) ? res : (res?.data || res?.items || res?.inventories || []);
+      setList(inventoryList);
     } catch (e) {
       setError(e.message || 'Không thể tải kho hàng');
     } finally {
@@ -951,8 +965,11 @@ function StaffTab() {
     setError('');
     try {
       const [uRes, rRes] = await Promise.all([getAllUsers(), getRoles()]);
-      setUsers(Array.isArray(uRes) ? uRes : (uRes?.users || []));
-      setRoles(Array.isArray(rRes) ? rRes : (rRes?.roles || []));
+      // Standard response parsing
+      const userList = Array.isArray(uRes) ? uRes : (uRes?.data || uRes?.users || []);
+      const roleList = Array.isArray(rRes) ? rRes : (rRes?.data || rRes?.roles || []);
+      setUsers(userList);
+      setRoles(roleList);
     } catch (e) {
       setError(e.message || 'Không thể tải danh sách người dùng');
     } finally {
@@ -1097,27 +1114,301 @@ function StaffTab() {
 }
 
 // ─── MAIN LAYOUT ──────────────────────────────────────────────
+// ─── TAB 6: VOUCHERS (CRUD) ───────────────────────────────────
+const EMPTY_VOUCHER = {
+  code: '',
+  description: '',
+  discountType: 'percentage',
+  discountValue: '',
+  minPurchase: 0,
+  maxDiscount: 0,
+  startDate: new Date().toISOString().split('T')[0],
+  expiryDate: '',
+  usageLimit: 100,
+  isActive: true
+};
+
+function VouchersTab() {
+  const [list, setList] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [showForm, setShowForm] = useState(false);
+  const [editing, setEditing] = useState(null);
+  const [form, setForm] = useState(EMPTY_VOUCHER);
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState('');
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [search, setSearch] = useState('');
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const res = await getAllVouchers();
+      // Standard response parsing
+      const voucherList = Array.isArray(res) ? res : (res?.data || res?.vouchers || []);
+      setList(voucherList);
+    } catch (e) {
+      setError(e.message || 'Không thể tải voucher');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { load(); }, [load]);
+
+  const openCreate = () => { setEditing(null); setForm(EMPTY_VOUCHER); setSaveError(''); setShowForm(true); };
+  const openEdit = (v) => {
+    setEditing(v);
+    setForm({
+      ...v,
+      startDate: v.startDate ? new Date(v.startDate).toISOString().split('T')[0] : '',
+      expiryDate: v.expiryDate ? new Date(v.expiryDate).toISOString().split('T')[0] : ''
+    });
+    setSaveError('');
+    setShowForm(true);
+  };
+
+  const handleSave = async (e) => {
+    e.preventDefault();
+    setSaving(true);
+    setSaveError('');
+    try {
+      if (editing) await updateVoucher(editing._id, form);
+      else await createVoucher(form);
+      setShowForm(false);
+      await load();
+    } catch (e) {
+      setSaveError(e.message || 'Lưu thất bại');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!deleteTarget) return;
+    try {
+      await deleteVoucher(deleteTarget._id);
+      setDeleteTarget(null);
+      await load();
+    } catch (e) {
+      alert(e.message || 'Xóa thất bại');
+    }
+  };
+
+  const filtered = list.filter((v) => !search || (v.code || '').toLowerCase().includes(search.toLowerCase()));
+
+  return (
+    <section className="tab-content">
+      <div className="tab-header">
+        <div>
+          <h2 className="tab-title">Quản lý Voucher</h2>
+          <p className="tab-subtitle">Tạo mã khuyến mãi và ưu đãi cho khách hàng</p>
+        </div>
+        <button className="btn-primary" onClick={openCreate} type="button">Thêm Voucher</button>
+      </div>
+
+      <div className="filter-bar">
+        <input className="search-input" onChange={(e) => setSearch(e.target.value)} placeholder="Tìm mã voucher..." type="text" value={search} />
+      </div>
+
+      {loading && <LoadingState />}
+      {!loading && error && <ErrorState message={error} onRetry={load} />}
+      {!loading && !error && (
+        <div className="data-table-wrap">
+          <table className="data-table">
+            <thead>
+              <tr>
+                <th>Mã</th>
+                <th>Giảm giá</th>
+                <th>Điều kiện</th>
+                <th>Thời hạn</th>
+                <th>Đã dùng</th>
+                <th>Trạng thái</th>
+                <th>Thao tác</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.length === 0 ? (
+                <tr><td className="empty-cell" colSpan={7}>Chưa có voucher nào</td></tr>
+              ) : filtered.map((v) => (
+                <tr key={v._id}>
+                  <td><strong>{v.code}</strong></td>
+                  <td>
+                    {v.discountType === 'percentage' ? `${v.discountValue}%` : formatCurrency(v.discountValue)}
+                  </td>
+                  <td>
+                    Min: {formatCurrency(v.minPurchase)}
+                  </td>
+                  <td>
+                    {new Date(v.expiryDate).toLocaleDateString('vi-VN')}
+                  </td>
+                  <td>{v.usageCount} / {v.usageLimit}</td>
+                  <td>
+                    <span className={`badge ${v.isActive ? 'badge-success' : 'badge-error'}`}>
+                      {v.isActive ? 'Bật' : 'Tắt'}
+                    </span>
+                  </td>
+                  <td>
+                    <div className="action-btns">
+                      <button className="btn-sm btn-outline" onClick={() => openEdit(v)} type="button">Sửa</button>
+                      <button className="btn-sm btn-danger-ghost" onClick={() => setDeleteTarget(v)} type="button">Xóa</button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {showForm && (
+        <div className="modal-overlay" role="dialog" aria-modal="true">
+          <div className="modal-box modal-lg">
+            <h3 className="modal-title">{editing ? 'Chỉnh sửa Voucher' : 'Thêm Voucher mới'}</h3>
+            <form className="cms-form" onSubmit={handleSave}>
+              <div className="form-box-grid">
+                <label className="form-field">
+                  <span>Mã Voucher *</span>
+                  <input onChange={(e) => setForm((f) => ({ ...f, code: e.target.value.toUpperCase() }))} placeholder="SALE50" required type="text" value={form.code} />
+                </label>
+                <label className="form-field">
+                  <span>Loại giảm giá</span>
+                  <select onChange={(e) => setForm((f) => ({ ...f, discountType: e.target.value }))} value={form.discountType}>
+                    <option value="percentage">Phần trăm (%)</option>
+                    <option value="fixed">Số tiền cố định (đ)</option>
+                  </select>
+                </label>
+                <label className="form-field">
+                  <span>Giá trị giảm *</span>
+                  <input min="0" onChange={(e) => setForm((f) => ({ ...f, discountValue: e.target.value }))} placeholder="10" required type="number" value={form.discountValue} />
+                </label>
+                <label className="form-field">
+                  <span>Giá trị đơn hàng tối thiểu (đ)</span>
+                  <input min="0" onChange={(e) => setForm((f) => ({ ...f, minPurchase: e.target.value }))} placeholder="0" type="number" value={form.minPurchase} />
+                </label>
+                <label className="form-field">
+                  <span>Giảm tối đa (đ)</span>
+                  <input min="0" onChange={(e) => setForm((f) => ({ ...f, maxDiscount: e.target.value }))} placeholder="0" type="number" value={form.maxDiscount} />
+                </label>
+                <label className="form-field">
+                  <span>Giới hạn lượt dùng</span>
+                  <input min="1" onChange={(e) => setForm((f) => ({ ...f, usageLimit: e.target.value }))} placeholder="100" type="number" value={form.usageLimit} />
+                </label>
+                <label className="form-field">
+                  <span>Ngày bắt đầu</span>
+                  <input onChange={(e) => setForm((f) => ({ ...f, startDate: e.target.value }))} type="date" value={form.startDate} />
+                </label>
+                <label className="form-field">
+                  <span>Ngày hết hạn *</span>
+                  <input required onChange={(e) => setForm((f) => ({ ...f, expiryDate: e.target.value }))} type="date" value={form.expiryDate} />
+                </label>
+                <label className="form-field span-2">
+                  <span>Mô tả</span>
+                  <textarea onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))} placeholder="Mô tả ưu đãi..." rows={2} value={form.description} />
+                </label>
+                <label className="checkbox-field">
+                  <input checked={form.isActive} onChange={(e) => setForm((f) => ({ ...f, isActive: e.target.checked }))} type="checkbox" />
+                  <span>Kích hoạt voucher này</span>
+                </label>
+              </div>
+              {saveError && <p className="form-error">{saveError}</p>}
+              <div className="modal-actions">
+                <button className="btn-ghost" onClick={() => setShowForm(false)} type="button">Hủy</button>
+                <button className="btn-primary" disabled={saving} type="submit">{saving ? 'Đang lưu...' : 'Lưu'}</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {deleteTarget && (
+        <ConfirmModal
+          message={`Xóa voucher "${deleteTarget.code}"? Thao tác này không thể hoàn tác.`}
+          onCancel={() => setDeleteTarget(null)}
+          onConfirm={handleDelete}
+        />
+      )}
+    </section>
+  );
+}
+
 const TABS = [
-  { key: 'analytics', label: 'Dashboard' },
-  { key: 'appointments', label: 'Lịch hẹn' },
-  { key: 'products', label: 'Dịch vụ' },
-  { key: 'categories', label: 'Danh mục' },
-  { key: 'inventory', label: 'Kho hàng' },
-  { key: 'staff', label: 'Nhân sự' },
+  { key: 'analytics', label: 'Dashboard', icon: 'dashboard' },
+  { key: 'appointments', label: 'Lịch hẹn', icon: 'calendar_month' },
+  { key: 'products', label: 'Dịch vụ', icon: 'content_cut' },
+  { key: 'categories', label: 'Danh mục', icon: 'category' },
+  { key: 'inventory', label: 'Kho hàng', icon: 'inventory_2' },
+  { key: 'staff', label: 'Nhân sự', icon: 'badge' },
+  { key: 'vouchers', label: 'Voucher', icon: 'confirmation_number' },
 ];
 
 function AdminDashboardPage() {
   const [activeTab, setActiveTab] = useState('analytics');
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const user = useMemo(() => {
     try { return JSON.parse(localStorage.getItem('user') || '{}'); }
     catch { return {}; }
   }, []);
 
+  const handleLogout = () => {
+    localStorage.clear();
+    window.location.href = '/login';
+  };
+
 
   return (
-    <PageLayout>
-      <div className="admin-cms-unified">
+    <div className="admin-cms">
+      {/* Mobile Bar */}
+      <header className="cms-mobile-bar">
+        <button className="cms-hamburger" onClick={() => setSidebarOpen(true)} type="button">
+          <span /><span /><span />
+        </button>
+        <span className="cms-mobile-title">Artisan Ledger Admin</span>
+      </header>
+
+      {/* Sidebar Overlay */}
+      {sidebarOpen && <div className="cms-overlay" onClick={() => setSidebarOpen(false)} />}
+
+      {/* Sidebar */}
+      <aside className={`cms-sidebar ${sidebarOpen ? 'open' : ''}`}>
+        <div className="cms-brand">
+          <div className="cms-brand-mark">AL</div>
+          <div>
+            <span className="cms-brand-name">Artisan Ledger</span>
+            <span className="cms-brand-sub">THE ARTISTIC LOUNGE</span>
+          </div>
+        </div>
+
+        <nav className="cms-nav">
+          {TABS.map((tab) => (
+            <button
+              className={`cms-nav-item${activeTab === tab.key ? ' active' : ''}`}
+              key={tab.key}
+              onClick={() => { setActiveTab(tab.key); setSidebarOpen(false); }}
+              type="button"
+            >
+              <span className="material-symbols-outlined">{tab.icon}</span>
+              {tab.label}
+            </button>
+          ))}
+        </nav>
+
+        <div className="cms-sidebar-footer">
+          <div className="cms-user-info">
+            <div className="cms-user-avatar">{(user.name || 'A')[0].toUpperCase()}</div>
+            <div>
+              <p className="cms-user-name">{user.name || 'Admin'}</p>
+              <p className="cms-user-role">PREMIUM MANAGEMENT</p>
+            </div>
+          </div>
+          <button className="btn-logout" onClick={handleLogout} type="button">Đăng xuất</button>
+        </div>
+      </aside>
+
+      {/* Main Content */}
+      <main className="cms-main">
         <header className="cms-header">
           <div className="cms-brand-info">
             <h1>Quản trị hệ thống</h1>
@@ -1141,16 +1432,17 @@ function AdminDashboardPage() {
           </nav>
         </header>
 
-        <main className="cms-content-shell">
+        <section className="cms-content-shell">
           {activeTab === 'analytics' && <AnalyticsTab />}
           {activeTab === 'appointments' && <AppointmentsTab />}
           {activeTab === 'products' && <ProductsTab />}
           {activeTab === 'categories' && <CategoriesTab />}
           {activeTab === 'inventory' && <InventoryTab />}
           {activeTab === 'staff' && <StaffTab />}
-        </main>
-      </div>
-    </PageLayout>
+          {activeTab === 'vouchers' && <VouchersTab />}
+        </section>
+      </main>
+    </div>
   );
 }
 

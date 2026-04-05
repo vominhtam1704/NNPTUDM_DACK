@@ -27,8 +27,10 @@ app.use(cors({
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
-// Static files for uploads
+// Static files for uploads - supporting both locations for flexibility
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
+app.use('/assets', express.static(path.join(process.cwd(), 'public/assets')));
 
 // ========== HEALTH CHECK ==========
 app.get('/health', (req, res) => {
@@ -56,6 +58,7 @@ const messageRoutes = require('./routes/messages');
 const reviewRoutes = require('./routes/reviews');
 const inventoryRoutes = require('./routes/inventory');
 const analyticsRoutes = require('./routes/analytics');
+const voucherRoutes = require('./routes/voucherRoutes');
 // const uploadRoutes = require('./routes/uploads');
 
 // Register routes
@@ -71,7 +74,15 @@ app.use('/api/messages', messageRoutes);
 app.use('/api/reviews', reviewRoutes);
 app.use('/api/inventory', inventoryRoutes);
 app.use('/api/analytics', analyticsRoutes);
+app.use('/api/vouchers', voucherRoutes);
 // app.use('/api/uploads', uploadRoutes);
+
+    // ===== OLD AVATAR FILE CLEANUP DISABLED FOR FLEXIBILITY =====
+    /*
+    const path = require('path');
+    const fs = require('fs');
+    ...
+    */
 
 // ========== ERROR HANDLER ==========
 app.use((err, req, res, next) => {

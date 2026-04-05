@@ -9,6 +9,7 @@ const fallbackAvatar =
 const getNavItems = (role) => {
   const common = [
     { icon: 'home', label: 'Trang chủ', to: '/home' },
+    { icon: 'groups', label: 'Thợ cắt tóc', to: '/barbers' },
   ];
 
   if (role === 'admin') {

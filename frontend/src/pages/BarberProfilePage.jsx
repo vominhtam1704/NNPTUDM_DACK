@@ -5,9 +5,16 @@ import PageLayout from '../components/PageLayout';
 import './BarberProfilePage.scss';
 
 const fallbackAvatar =
-  'https://lh3.googleusercontent.com/aida-public/AB6AXuCFks9e141_81li6G-kIA79-Z18nMyzR5240bCkJhJbclkBj8e_gWupu27176le7A2NEhY1NCqFbL6YqXmXUE20ZlWLz9sbSbcmmNXzbJXlzv7nZPzmEgAkR91KiHSVsEtLzRfrLm_ZHC-L-Jm-U2RwAjYoTPL3hhKs8QpX4HS3RBF1tmGKw2xkmZpyHynoUSoVkpwV57avMK9V_18d6ocL1Y4PfUh2_KHsmonmHXlhM-V_nMO2b-Fd21uQhCN29J2WZC9M-832gxI';
+  'https://images.unsplash.com/photo-1599305090598-fe179d501227?auto=format&fit=crop&q=80&w=800';
 
 const formatCurrency = (value) => `${Number(value || 0).toLocaleString('vi-VN')}k`.replace(',000', '');
+
+const getAvatarUrl = (path) => {
+  if (!path) return fallbackAvatar;
+  if (path.startsWith('http')) return path;
+  const baseUrl = '';
+  return `${baseUrl}${path.startsWith('/') ? '' : '/'}${path}`;
+};
 
 function BarberProfilePage() {
   const navigate = useNavigate();
@@ -25,8 +32,8 @@ function BarberProfilePage() {
 
       try {
         const data = await getPublicBarberProfile(barberId);
-        if (active) {
-          setProfile(data);
+        if (active && data.success) {
+          setProfile(data.data);
         }
       } catch (err) {
         if (active) {
@@ -75,7 +82,7 @@ function BarberProfilePage() {
     );
   }
 
-  const { barber = {}, stats = {}, specialties = [], services = [], recentReviews = [], schedule = [] } = profile || {};
+  const { barber = {}, stats = {}, specialties = [], services = [], reviews: recentReviews = [], schedule = [] } = profile || {};
 
   return (
     <PageLayout>
@@ -84,7 +91,7 @@ function BarberProfilePage() {
         <section className="hero-section">
           <div className="hero-media">
             <div className="hero-image-wrap">
-              <img alt={barber?.name || 'Barber'} src={barber?.avatar || fallbackAvatar} />
+              <img alt={barber?.name || 'Barber'} src={getAvatarUrl(barber?.avatar)} />
             </div>
 
             <div className="hero-stats-card">
@@ -132,11 +139,18 @@ function BarberProfilePage() {
             </div>
 
             <div className="hero-actions">
-              <button className="hero-primary-btn" onClick={() => navigate('/booking')} type="button">
+              <button 
+                className="hero-primary-btn" 
+                onClick={() => navigate(`/booking?barberId=${barber._id}`, { 
+                  state: { 
+                    selectedBarberId: barber._id, 
+                    selectedBarberName: barber.name, 
+                    selectedBarberAvatar: barber.avatar 
+                  } 
+                })} 
+                type="button"
+              >
                 Dat lich ngay
-              </button>
-              <button className="hero-secondary-btn" type="button">
-                Xem Portfolio
               </button>
             </div>
           </div>
@@ -154,14 +168,27 @@ function BarberProfilePage() {
                 services.map((service) => (
                   <article className="service-item" key={service._id || service.name}>
                     <div className="service-accent" />
-                    <div>
+                    <div className="service-content">
                       <h4>{service.name || 'Service'}</h4>
                       <p>
                         {service.duration || '--'} phut
                         {service.description ? ` • ${service.description}` : ''}
                       </p>
+                      <strong>{formatCurrency(service.price)}</strong>
                     </div>
-                    <strong>{formatCurrency(service.price)}</strong>
+                    <button 
+                      className="service-book-btn" 
+                      onClick={() => navigate(`/booking?barberId=${barber._id}&serviceId=${service._id}`, { 
+                        state: { 
+                          selectedBarberId: barber._id, 
+                          selectedBarberName: barber.name, 
+                          selectedBarberAvatar: barber.avatar,
+                          selectedServiceIds: [service._id]
+                        } 
+                      })}
+                    >
+                      Dat cho
+                    </button>
                   </article>
                 ))
               ) : (
@@ -226,12 +253,12 @@ function BarberProfilePage() {
                     <div className="review-avatar">
                       <img
                         alt={review.customerId?.name || 'Khach hang'}
-                        src={review.customerId?.avatar || fallbackAvatar}
+                        src={getAvatarUrl(review.customerId?.avatar)}
                       />
                     </div>
                     <div>
-                      <strong>{review.customerId?.name || 'Khach hang'}</strong>
-                      <span>{review.productId?.name || review.rating || 0} sao</span>
+                      <strong>{review.customerId?.name || 'Khách hàng'}</strong>
+                      <span>{review.rating || 0} sao {review.productId?.name ? ` • ${review.productId.name}` : ''}</span>
                     </div>
                   </div>
                 </article>
@@ -267,15 +294,34 @@ function BarberProfilePage() {
                 nghiep tu {barber?.name || 'Master Barber'}.
               </p>
             </div>
-            <button onClick={() => navigate('/booking')} type="button">
+            <button 
+              onClick={() => navigate(`/booking?barberId=${barber._id}`, { 
+                state: { 
+                  selectedBarberId: barber._id, 
+                  selectedBarberName: barber.name, 
+                  selectedBarberAvatar: barber.avatar 
+                } 
+              })} 
+              type="button"
+            >
               Dat ngay
             </button>
           </div>
         </section>
       </main>
 
-      <button className="mobile-fab" onClick={() => navigate('/booking')} type="button">
-        <span className="material-symbols-outlined">add</span>
+      <button 
+        className="mobile-fab" 
+        onClick={() => navigate(`/booking?barberId=${barber._id}`, { 
+          state: { 
+            selectedBarberId: barber._id, 
+            selectedBarberName: barber.name, 
+            selectedBarberAvatar: barber.avatar 
+          } 
+        })} 
+        type="button"
+      >
+        <span className="material-symbols-outlined">calendar_month</span>
       </button>
     </div>
     </PageLayout>

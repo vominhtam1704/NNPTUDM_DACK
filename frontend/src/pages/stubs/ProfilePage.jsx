@@ -28,13 +28,13 @@ const formatDateParts = (dateValue) => {
 const getStatusMeta = (status) => {
   switch (status) {
     case 'confirmed':
-      return { label: 'Da xac nhan', className: 'confirmed' };
+      return { label: 'Đã xác nhận', className: 'confirmed' };
     case 'pending':
-      return { label: 'Cho thanh toan', className: 'pending' };
+      return { label: 'Chờ thanh toán', className: 'pending' };
     case 'done':
-      return { label: 'Da xong', className: 'done' };
+      return { label: 'Hoàn tất', className: 'done' };
     case 'cancelled':
-      return { label: 'Da huy', className: 'cancelled' };
+      return { label: 'Đã hủy', className: 'cancelled' };
     default:
       return { label: status, className: '' };
   }
@@ -55,13 +55,15 @@ function ProfilePage() {
       setError('');
 
       try {
-        const data = await getMyReservations({ limit: 50 });
+        const response = await getMyReservations({ limit: 50 });
+        // Handle standardized response for reservations (returns full body)
+        const data = response?.data || response;
         if (active) {
           setReservations(Array.isArray(data) ? data : []);
         }
       } catch (err) {
         if (active) {
-          setError(err.message || 'Khong the tai danh sach lich hen');
+          setError(err.message || 'Không thể tải danh sách lịch hẹn');
         }
       } finally {
         if (active) {
@@ -104,12 +106,13 @@ function ProfilePage() {
   const handleCancelReservation = async (reservationId) => {
     setProcessingId(reservationId);
     try {
-      const updatedReservation = await cancelReservation(reservationId, { reason: 'Cancelled from customer dashboard' });
+      const response = await cancelReservation(reservationId, { reason: 'Cancelled from customer dashboard' });
+      const updatedReservation = response?.data || response;
       setReservations((current) =>
         current.map((item) => (item._id === reservationId ? { ...item, ...updatedReservation } : item))
       );
     } catch (err) {
-      setError(err.message || 'Khong the huy lich hen');
+      setError(err.message || 'Không thể hủy lịch hẹn');
     } finally {
       setProcessingId('');
     }
@@ -122,8 +125,8 @@ function ProfilePage() {
           <div className="appointments-content">
           <section className="appointments-heading">
             <div>
-              <span>Quan ly lich trinh</span>
-              <h2>Lich hen cua toi</h2>
+              <span>Quản lý lịch trình</span>
+              <h2>Lịch hẹn của tôi</h2>
             </div>
 
             <div className="appointments-tabs">
@@ -132,31 +135,31 @@ function ProfilePage() {
                 onClick={() => setActiveTab('upcoming')}
                 type="button"
               >
-                Sap toi
+                Sắp tới
               </button>
               <button
                 className={activeTab === 'completed' ? 'active' : ''}
                 onClick={() => setActiveTab('completed')}
                 type="button"
               >
-                Da hoan thanh
+                Đã hoàn thành
               </button>
             </div>
           </section>
 
-          {isLoading ? <div className="appointments-state">Dang tai lich hen...</div> : null}
+          {isLoading ? <div className="appointments-state">Đang tải lịch hẹn...</div> : null}
           {!isLoading && error ? <div className="appointments-state error">{error}</div> : null}
 
           {!isLoading && !error ? (
             <div className="appointments-grid">
               <section className="appointments-list">
                 <p className="appointments-section-label">
-                  {activeTab === 'upcoming' ? 'Lich hen sap toi' : 'Lich hen da hoan thanh'}
+                  {activeTab === 'upcoming' ? 'Lịch hẹn sắp tới' : 'Lịch hẹn đã hoàn thành'}
                 </p>
 
                 {displayedReservations.length === 0 ? (
                   <div className="appointments-empty-card">
-                    Ban chua co lich hen nao trong nhom nay.
+                    Bạn chưa có lịch hẹn nào trong nhóm này.
                   </div>
                 ) : (
                   displayedReservations.map((reservation) => {
@@ -177,17 +180,17 @@ function ProfilePage() {
 
                             <div className="appointment-copy">
                               <div className={`appointment-status ${statusMeta.className}`}>{statusMeta.label}</div>
-                              <h3>{reservation.serviceId?.name || 'Dich vu'}</h3>
+                              <h3>{reservation.serviceId?.name || 'Dịch vụ'}</h3>
                               <div className="appointment-meta">
                                 <span className="material-symbols-outlined">person</span>
                                 <span>
-                                  Tho cat: <strong>{reservation.barberId?.name || 'Chua ro'}</strong>
+                                  Thợ cắt: <strong>{reservation.barberId?.name || 'Chưa rõ'}</strong>
                                 </span>
                               </div>
                               <div className="appointment-meta">
                                 <span className="material-symbols-outlined">schedule</span>
                                 <span>
-                                  {reservation.appointmentTime} ({duration} phut)
+                                  {reservation.appointmentTime} ({duration} phút)
                                 </span>
                               </div>
                               <div className="appointment-submeta">{dateParts.fullLabel}</div>
@@ -206,11 +209,11 @@ function ProfilePage() {
                                   onClick={() => handleCancelReservation(reservation._id)}
                                   type="button"
                                 >
-                                  {processingId === reservation._id ? 'Dang huy' : 'Huy'}
+                                  {processingId === reservation._id ? 'Đang hủy' : 'Hủy'}
                                 </button>
                               ) : null}
                               <Link className="solid-btn" to={`/payment/${reservation._id}/done`}>
-                                Chi tiet
+                                Chi tiết
                               </Link>
                             </div>
                           </div>
@@ -222,11 +225,11 @@ function ProfilePage() {
               </section>
 
               <aside className="appointments-sidepanel">
-                <p className="appointments-section-label">Gan day</p>
+                <p className="appointments-section-label">Gần đây</p>
 
                 <div className="appointments-recent-panel">
                   {recentReservations.length === 0 ? (
-                    <div className="recent-empty">Chua co lich hen da hoan thanh.</div>
+                    <div className="recent-empty">Chưa có lịch hẹn đã hoàn thành.</div>
                   ) : (
                     recentReservations.map((reservation) => {
                       const dateParts = formatDateParts(reservation.appointmentDate);
@@ -242,14 +245,14 @@ function ProfilePage() {
                               <span>{dateParts.fullLabel}</span>
                               <strong>{statusMeta.label}</strong>
                             </div>
-                            <h4>{reservation.serviceId?.name || 'Dich vu'}</h4>
+                            <h4>{reservation.serviceId?.name || 'Dịch vụ'}</h4>
                             <p>
-                              Tho: {reservation.barberId?.name || 'Chua ro'} •{' '}
+                              Thợ: {reservation.barberId?.name || 'Chưa rõ'} •{' '}
                               {formatCurrency(reservation.totalPrice)}
                             </p>
                             {canReviewReservation(reservation.status) ? (
                               <Link className="recent-review-btn" to={`/review/${reservation._id}`}>
-                                Danh gia
+                                Đánh giá
                               </Link>
                             ) : (
                               <div className="recent-stars">
@@ -271,7 +274,7 @@ function ProfilePage() {
                     onClick={() => setActiveTab('completed')}
                     type="button"
                   >
-                    Xem tat ca lich su
+                    Xem tất cả lịch sử
                   </button>
                 </div>
 
@@ -281,9 +284,9 @@ function ProfilePage() {
                     src="https://lh3.googleusercontent.com/aida-public/AB6AXuBUJTGk0STN46tjw5crBF-uvWuFf_i7Jk__Pkg-1QU5vLJhNVckC7zs8XSxGp-DrE6x9SuW3OkdTgkCwKrLxuu2DeUNU8WDPSVDfCnwZtCtTuKwNkyPOcgt1oDGm_zfs4Rc0NTd-275Zq15NeMWcWzUlMA5X-mfFh69zpcI5caI9AX_SEAR4rPpwBgwhfqd5Ms2Olbka9wRGd2jwkoliLM9lIWQQPOWEb4OglKXwHzqdsJha398g6gdcIQFvuiQpSrfP8T_wMeaSiE"
                   />
                   <div className="appointments-promo-overlay">
-                    <p>Uu dai thanh vien</p>
-                    <h4>Giam 20% cho lich hen tiep theo vao ngay thuong</h4>
-                    <Link to="/booking">Dat lich ngay</Link>
+                    <p>Ưu đãi thành viên</p>
+                    <h4>Giảm 20% cho lịch hẹn tiếp theo vào ngày thường</h4>
+                    <Link to="/booking">Đặt lịch ngay</Link>
                   </div>
                 </div>
               </aside>

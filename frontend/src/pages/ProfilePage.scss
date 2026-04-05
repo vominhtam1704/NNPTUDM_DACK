@@ -1,15 +1,15 @@
 .appointments-page {
-  --bg: #f7f9ff;
+  --bg: #f8fbfa;
   --surface: #ffffff;
-  --surface-low: #edf4ff;
-  --surface-high: #d9eaff;
-  --surface-highest: #d1e4fb;
-  --text: #091d2e;
+  --surface-low: #f1f7f6;
+  --surface-high: rgba(0, 99, 98, 0.1);
+  --surface-highest: rgba(0, 99, 98, 0.15);
+  --text: #0a2e2d;
   --muted: #64748b;
-  --outline: #bdc9c8;
+  --outline: rgba(226, 232, 240, 0.8);
   --primary: #006362;
-  --primary-strong: #1b7d7c;
-  --primary-soft: #9bf1ef;
+  --primary-strong: #004d4d;
+  --primary-soft: rgba(0, 99, 98, 0.1);
   --tertiary: #864725;
   min-height: calc(100vh - 5rem);
   background: var(--bg);

@@ -6,7 +6,14 @@ import PageLayout from '../components/PageLayout';
 import './BookingDetailsPage.scss';
 
 const fallbackAvatar =
-  'https://lh3.googleusercontent.com/aida-public/AB6AXuCD1VZI9vpwZKFSj9GOgeEek9r7CCKhjRA3qHB3y3PBjWxXEjsbXe3RFR6QWaLaVNOpQNQBQ7QBUAZnyze7yEAWMzf-VA6A9OG-S5kCO-c2SBRd-E2shWgZcZPpMaaE0as_UTEQBn9K5lt2hZYrHTpCMCUDlTLn9F0_Nub0iIbNUYxLFu0Jejh3wXdcY3VWXreY54O9k1jl-f4Re874BT-7v2XJjpR1VcxmUpLR0fDwlSJlxJpp76spU4TuG62kQLfiPGniBRZTbwQ';
+  'https://images.unsplash.com/photo-1599305090598-fe179d501227?auto=format&fit=crop&q=80&w=800';
+
+const getAvatarUrl = (path) => {
+  if (!path) return fallbackAvatar;
+  if (path.startsWith('http')) return path;
+  const baseUrl = '';
+  return `${baseUrl}${path.startsWith('/') ? '' : '/'}${path}`;
+};
 
 const formatCurrency = (value) => `${Number(value || 0).toLocaleString('vi-VN')}d`;
 
@@ -42,8 +49,14 @@ const BookingDetailsPage = () => {
       }
 
       try {
-        const data = await getReservationById(appointmentId);
-        setAppointment(data);
+        const response = await getReservationById(appointmentId);
+        // Handle result being either the direct object (if middleware extracts it) or the wrapper
+        const appointmentData = response?.data || response;
+        if (appointmentData && appointmentData._id) {
+          setAppointment(appointmentData);
+        } else {
+          setError('Không tìm thấy thông tin lịch hẹn hợp lệ');
+        }
       } catch (err) {
         console.error('Load appointment error:', err);
         setError('Không thể tải thông tin lịch hẹn');
@@ -175,7 +188,7 @@ const BookingDetailsPage = () => {
                 <h3>Stylist</h3>
                 <div className="barber-info">
                   <img
-                    src={appointment.barberId?.avatar || fallbackAvatar}
+                    src={getAvatarUrl(appointment.barberId?.avatar)}
                     alt={appointment.barberId?.name || 'Stylist'}
                     className="barber-avatar"
                   />

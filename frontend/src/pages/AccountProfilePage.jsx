@@ -2,11 +2,11 @@ import React, { useEffect, useMemo, useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { getMyReservations, cancelReservation } from '../services/reservations';
+import { getAssetUrl } from '../utils/url';
 import PageLayout from '../components/PageLayout';
 import './AccountProfilePage.scss';
 
-const fallbackAvatar =
-  'https://lh3.googleusercontent.com/aida-public/AB6AXuA1FkXI9Y5wO1hAhzI_oxmjvGnVLGzzkrmk2t6ZHCKTY1ghBq6aiiMf5CoOo8FNnY-zJnlkmZjXe-K1LzDrfow44W_amPhRamYOQiEgh16KmBgJrjggjuOxubwOr_tM7rsb_1GiKPblr7U4F8e58DCLZWkcg1Qa45wHrdLnH8nhT9KJYZOox2zirx0V7wVdBs2KrAeMN75msKWwfk90KxBmvSSk69mEBUohb409E0KTdd3wlWIYLcbP_CiD8-c0Rj8OjnnUWM7Im0c';
+// Fallback avatar is now managed by getAssetUrl in utils/url.js
 
 const formatDateInput = (value) => {
   if (!value) return '';
@@ -129,8 +129,9 @@ function AccountProfilePage() {
       try {
         const response = await getMyReservations({ limit: 5 });
         if (active) {
-          const appointmentList = Array.isArray(response) ? response : response?.data || response?.result || [];
-          setAppointments(appointmentList);
+          // Handle standardized response for reservations (returns full body)
+          const data = Array.isArray(response) ? response : (response?.data || response?.reservations || []);
+          setAppointments(data);
         }
       } catch (err) {
         if (active) {
@@ -232,12 +233,7 @@ function AccountProfilePage() {
     }
   };
 
-  const getAvatarUrl = (path) => {
-    if (!path) return fallbackAvatar;
-    if (path.startsWith('http')) return path;
-    const baseUrl = 'http://localhost:5000';
-    return `${baseUrl}${path.startsWith('/') ? '' : '/'}${path}`;
-  };
+  const getAvatarUrl = (path) => getAssetUrl(path);
 
   return (
     <PageLayout>

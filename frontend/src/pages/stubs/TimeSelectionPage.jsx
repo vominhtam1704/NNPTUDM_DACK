@@ -11,7 +11,7 @@ const defaultSelectedBarber = {
     'https://lh3.googleusercontent.com/aida-public/AB6AXuB1MRNv0keSBAXa8xPvqgpGq338JoB2sdMWny70_mKaW1JmfJmAB3VqahqxMUaCT_y9WawSMleWXJ7TKDhX4B4tkZmtV172Ce9qB6IsCE4CTuvRkODR4447oQGhoQUC-R61BHpC5T2fI5XnI4GF8OMimlIZJP4a-HihRS8u2kKuAmQtrYcPLqhy6Su2yILDGs-LDpN9emk6Pbv92fZ8J4O3IB-XCukMveEp7fnSRJKCt8Lg87Ym7DHWOoCeun1mjNQziH8NxbJgheo',
 };
 
-const formatCurrency = (value) => `${Number(value || 0).toLocaleString('vi-VN')}d`;
+const formatCurrency = (value) => `${Number(value || 0).toLocaleString('vi-VN')}đ`;
 
 const formatDateCard = (dateValue) => {
   const date = new Date(dateValue);
@@ -229,22 +229,27 @@ const TimeSelectionPage = () => {
               <div className="time-step-circle">
                 <span className="material-symbols-outlined">check</span>
               </div>
-              <span>Dich vu</span>
+              <span>Dịch vụ</span>
             </div>
             <div className="time-step-line completed" />
             <div className="time-step active">
               <div className="time-step-circle">2</div>
-              <span>Thoi gian</span>
+              <span>Thời gian</span>
             </div>
             <div className="time-step-line" />
             <div className="time-step">
               <div className="time-step-circle">3</div>
-              <span>Thong tin</span>
+              <span>Thông tin</span>
             </div>
             <div className="time-step-line" />
             <div className="time-step">
               <div className="time-step-circle">4</div>
-              <span>Xac nhan</span>
+              <span>Thanh toán</span>
+            </div>
+            <div className="time-step-line" />
+            <div className="time-step">
+              <div className="time-step-circle">5</div>
+              <span>Hoàn tất</span>
             </div>
           </section>
 

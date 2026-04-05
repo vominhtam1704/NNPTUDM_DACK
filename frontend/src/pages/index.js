@@ -6,6 +6,7 @@
 export { default as HomePage } from '../pages/HomePage';
 export { default as AccountProfilePage } from '../pages/AccountProfilePage';
 export { default as BarberProfilePage } from '../pages/BarberProfilePage';
+export { default as BarberListPage } from '../pages/BarberListPage';
 export { default as LoginPage } from './stubs/LoginPage';
 export { default as SignupPage } from './stubs/SignupPage';
 export { default as BookingPage } from './stubs/BookingPage';

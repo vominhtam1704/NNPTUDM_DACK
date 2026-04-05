@@ -61,29 +61,29 @@ const BookingCompletePage = () => {
               <div className="complete-step-circle">
                 <span className="material-symbols-outlined filled">check</span>
               </div>
-              <span>Dich vu</span>
+              <span>Dịch vụ</span>
             </div>
             <div className="complete-step done">
               <div className="complete-step-circle">
                 <span className="material-symbols-outlined filled">check</span>
               </div>
-              <span>Chon tho</span>
+              <span>Chon thợ</span>
             </div>
             <div className="complete-step done">
               <div className="complete-step-circle">
                 <span className="material-symbols-outlined filled">check</span>
               </div>
-              <span>Thoi gian</span>
+              <span>Thời gian</span>
             </div>
             <div className="complete-step done">
               <div className="complete-step-circle">
                 <span className="material-symbols-outlined filled">check</span>
               </div>
-              <span>Thanh toan</span>
+              <span>Thanh toán</span>
             </div>
             <div className="complete-step active">
               <div className="complete-step-circle">5</div>
-              <span>Hoan tat</span>
+              <span>Hoàn tất</span>
             </div>
           </section>
 
@@ -92,11 +92,11 @@ const BookingCompletePage = () => {
               <div className="success-icon">
                 <span className="material-symbols-outlined filled">check_circle</span>
               </div>
-              <p className="success-eyebrow">Dat lich thanh cong</p>
-              <h2>Lich hen cua ban da duoc xac nhan</h2>
+              <p className="success-eyebrow">Đặt lịch thành công</p>
+              <h2>Lịch hẹn của bạn đã được xác nhận</h2>
               <p className="success-copy">
-                Cam on ban da tin tuong The Atelier. Chung toi da gui thong tin lich hen va
-                bien nhan thanh toan den email cua ban.
+                Cảm ơn bạn đã tin tưởng The Atelier. Chúng tôi đã gửi thông tin lịch hẹn và
+                biên nhận thanh toán đến email của bạn.
               </p>
 
               {isTransfer && paymentInfo?.qrUrl && (
@@ -113,35 +113,35 @@ const BookingCompletePage = () => {
               )}
 
               <div className="booking-reference">
-                <span>Ma lich hen</span>
+                <span>Mã lịch hẹn</span>
                 <strong>{appointmentId}</strong>
               </div>
 
               <div className="success-actions">
                 <Link className="primary-link-btn" to="/">
-                  Quay ve trang chu
+                  Quay về trang chủ
                 </Link>
                 <Link className="secondary-link-btn" to={`/review/${appointmentId}`}>
-                  Gui danh gia
+                  Gửi đánh giá
                 </Link>
                 <button className="secondary-link-btn" onClick={() => navigate('/profile')} type="button">
-                  Xem lich cua toi
+                  Xem lịch của tôi
                 </button>
               </div>
             </section>
 
             <aside className="complete-summary">
               <div className="complete-summary-card">
-                <h3>Thong tin lich hen</h3>
+                <h3>Thông tin lịch hẹn</h3>
 
                 <div className="summary-block">
-                  <p className="summary-label">Dich vu</p>
+                  <p className="summary-label">Dịch vụ</p>
                   <div className="summary-row">
                     <div>
                       <strong>{reservation?.serviceId?.name || 'Royal Grooming'}</strong>
-                      <span>{reservation?.notes || 'Cat toc, cao mat va Massage tinh dau'}</span>
+                      <span>{reservation?.notes || 'Cắt tóc, cạo mặt và Massage tinh dầu'}</span>
                     </div>
-                    <strong>{Number(reservation?.totalPrice || 450000).toLocaleString('vi-VN')}d</strong>
+                    <strong>{Number(reservation?.totalPrice || 0).toLocaleString('vi-VN')}đ</strong>
                   </div>
                 </div>
 
@@ -154,14 +154,14 @@ const BookingCompletePage = () => {
                     }
                   />
                   <div>
-                    <p className="summary-label">Chuyen gia</p>
-                    <strong>{reservation?.barberId?.name || 'Alex Nguyen'}</strong>
+                    <p className="summary-label">Chuyên gia</p>
+                    <strong>{reservation?.barberId?.name || 'Stylist'}</strong>
                   </div>
                 </div>
 
                 <div className="summary-time-grid">
                   <div className="summary-time-card">
-                    <p className="summary-label">Ngay</p>
+                    <p className="summary-label">Ngày</p>
                     <div>
                       <span className="material-symbols-outlined">calendar_today</span>
                       <span>{formattedDate}</span>
@@ -169,10 +169,10 @@ const BookingCompletePage = () => {
                   </div>
 
                   <div className="summary-time-card">
-                    <p className="summary-label">Gio</p>
+                    <p className="summary-label">Giờ</p>
                     <div>
                       <span className="material-symbols-outlined">schedule</span>
-                      <span>{reservation?.appointmentTime || '14:30'}</span>
+                      <span>{reservation?.appointmentTime || 'Giờ hẹn'}</span>
                     </div>
                   </div>
                 </div>
@@ -181,19 +181,18 @@ const BookingCompletePage = () => {
 
                 <div className="payment-status">
                   <div>
-                    <p className="summary-label">Thanh toan</p>
-                    <strong>{reservation?.status === 'confirmed' ? 'Da xac nhan lich hen' : 'Dang cho xu ly'}</strong>
+                    <p className="summary-label">Thanh toán</p>
+                    <strong>{reservation?.status === 'confirmed' ? 'Đã xác nhận lịch hẹn' : 'Đang chờ xử lý'}</strong>
                   </div>
                   <span className="status-chip">
-                    {Number(reservation?.totalPrice || 475000).toLocaleString('vi-VN')}d
+                    {Number(reservation?.totalPrice || 0).toLocaleString('vi-VN')}đ
                   </span>
                 </div>
               </div>
 
               <div className="note-card">
                 <p>
-                  Ban can doi lich? Hay lien he voi salon truoc 24 gio de duoc ho tro nhanh
-                  nhat.
+                  Bạn cần đổi lịch? Hãy liên hệ với salon trước 24 giờ để được hỗ trợ nhanh nhất.
                 </p>
               </div>
             </aside>

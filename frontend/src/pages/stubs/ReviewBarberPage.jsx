@@ -6,19 +6,19 @@ import PageLayout from '../../components/PageLayout';
 import '../ReviewBarberPage.scss';
 
 const feedbackTags = [
-  'Ky thuat cat tot',
-  'Tu van nhiet tinh',
-  'Dung gio',
-  'Khong gian sach se',
-  'Cham soc tan tam',
-  'Dang quay lai lan sau',
+  'Kỹ thuật tốt',
+  'Tư vấn nhiệt tình',
+  'Đúng giờ',
+  'Không gian sạch sẽ',
+  'Chăm sóc tận tâm',
+  'Sẽ quay lại',
 ];
 
 const ratingDetails = [
-  { id: 'skill', label: 'Tay nghe' },
-  { id: 'attitude', label: 'Thai do' },
-  { id: 'punctuality', label: 'Dung gio' },
-  { id: 'cleanliness', label: 'Ve sinh' },
+  { id: 'skill', label: 'Tay nghề' },
+  { id: 'attitude', label: 'Thái độ' },
+  { id: 'punctuality', label: 'Đúng giờ' },
+  { id: 'cleanliness', label: 'Vệ sinh' },
 ];
 
 const defaultBreakdown = {
@@ -83,13 +83,15 @@ const ReviewBarberPage = () => {
       setSubmitError('');
 
       try {
-        const data = await getReservationById(appointmentId);
+        const response = await getReservationById(appointmentId);
+        // Handle standardized nested response
+        const data = response?.data || response;
         if (active) {
           setReservation(data);
         }
       } catch (error) {
         if (active) {
-          setSubmitError(error.message || 'Khong the tai thong tin lich hen');
+          setSubmitError(error.message || 'Không thể tải thông tin lịch hẹn');
         }
       } finally {
         if (active) {
@@ -114,7 +116,7 @@ const ReviewBarberPage = () => {
       .join(', ');
 
     const tagSummary = selectedTags.length > 0 ? `Tags: ${selectedTags.join(', ')}` : '';
-    const recommendSummary = wouldRecommend ? 'Khach hang san sang gioi thieu.' : 'Khach hang chua san sang gioi thieu.';
+    const recommendSummary = wouldRecommend ? 'Sẵn sàng giới thiệu.' : 'Chưa sẵn sàng giới thiệu.';
     const mergedComment = [comment.trim(), detailSummary, tagSummary, recommendSummary]
       .filter(Boolean)
       .join('\n');
@@ -127,7 +129,7 @@ const ReviewBarberPage = () => {
       });
       setSubmitted(true);
     } catch (error) {
-      setSubmitError(error.message || 'Gui danh gia that bai');
+      setSubmitError(error.message || 'Gửi đánh giá thất bại');
     } finally {
       setIsSubmitting(false);
     }
@@ -151,8 +153,8 @@ const ReviewBarberPage = () => {
           month: 'long',
         }),
         time: reservation.appointmentTime,
-        service: reservation.serviceId?.name || 'Dich vu',
-        price: `${Number(reservation.totalPrice || 0).toLocaleString('vi-VN')}d`,
+        service: reservation.serviceId?.name || 'Dịch vụ',
+        price: `${Number(reservation.totalPrice || 0).toLocaleString('vi-VN')}đ`,
       }
     : null;
 
@@ -165,33 +167,33 @@ const ReviewBarberPage = () => {
               <div className="review-success-icon">
                 <span className="material-symbols-outlined filled">verified</span>
               </div>
-              <p className="review-eyebrow">Danh gia da duoc gui</p>
-              <h1>Cam on ban da chia se trai nghiem</h1>
+              <p className="review-eyebrow">Đánh giá đã được gửi</p>
+              <h1>Cảm ơn bạn đã chia sẻ trải nghiệm</h1>
               <p>
-                Nhan xet cua ban se giup {barber?.name} cai thien chat luong dich vu va giup khach
-                hang khac de dua ra lua chon phu hop.
+                Nhận xét của bạn sẽ giúp {barber?.name} cải thiện chất lượng dịch vụ và giúp khách
+                hàng khác dễ đưa ra lựa chọn phù hợp.
               </p>
               <div className="review-success-actions">
                 <Link className="review-primary-btn" to="/profile">
-                  Ve lich su lich hen
+                  Về lịch sử lịch hẹn
                 </Link>
                 <button className="review-secondary-btn" onClick={() => navigate('/')} type="button">
-                  Trang chu
+                  Trang chủ
                 </button>
               </div>
             </section>
           ) : isLoading ? (
             <section className="review-success-card">
-              <p>Dang tai thong tin lich hen...</p>
+              <p>Đang tải thông tin lịch hẹn...</p>
             </section>
           ) : !reservation || !barber ? (
             <section className="review-success-card">
-              <p className="review-eyebrow">Khong tai duoc du lieu</p>
-              <h1>Khong tim thay lich hen de danh gia</h1>
-              <p>{submitError || 'Hay quay lai trang ho so va thu mo lai lich hen.'}</p>
+              <p className="review-eyebrow">Không tải được dữ liệu</p>
+              <h1>Không tìm thấy lịch hẹn để đánh giá</h1>
+              <p>{submitError || 'Hãy quay lại trang hồ sơ và thử mở lại lịch hẹn.'}</p>
               <div className="review-success-actions">
                 <Link className="review-primary-btn" to="/profile">
-                  Ve ho so
+                  Về hồ sơ
                 </Link>
               </div>
             </section>
@@ -199,18 +201,18 @@ const ReviewBarberPage = () => {
             <div className="review-content-split">
               <section className="review-form-panel">
                 <div className="review-intro-card">
-                  <p className="review-eyebrow">Trai nghiem cua ban</p>
-                  <h2>Ban danh gia buoi hen nay nhu the nao?</h2>
+                  <p className="review-eyebrow">Trải nghiệm của bạn</p>
+                  <h2>Bạn đánh giá buổi hẹn này như thế nào?</h2>
                   <p>
-                    Danh gia chi mat duoi 1 phut. Hay chia se cam nhan that de salon cai thien chat
-                    luong phuc vu.
+                    Đánh giá chỉ mất dưới 1 phút. Hãy chia sẻ cảm nhận thật để salon cải thiện chất
+                    lượng phục vụ.
                   </p>
 
                   <StarRow large onChange={setOverallRating} value={overallRating} />
 
                   <div className="review-score-chip">
                     <strong>{overallRating}.0/5</strong>
-                    <span>{wouldRecommend ? 'San sang gioi thieu cho ban be' : 'Can cai thien them'}</span>
+                    <span>{wouldRecommend ? 'Sẵn sàng giới thiệu cho bạn bè' : 'Cần cải thiện thêm'}</span>
                   </div>
                 </div>
 
@@ -218,8 +220,8 @@ const ReviewBarberPage = () => {
                   {submitError ? <div className="review-inline-error">{submitError}</div> : null}
                   <section className="review-section">
                     <div className="section-heading">
-                      <h3>Diem chi tiet</h3>
-                      <span>Trung binh {averageDetail}</span>
+                      <h3>Điểm chi tiết</h3>
+                      <span>Trung bình {averageDetail}</span>
                     </div>
 
                     <div className="detail-rating-list">
@@ -227,7 +229,7 @@ const ReviewBarberPage = () => {
                         <div className="detail-rating-item" key={item.id}>
                           <div>
                             <strong>{item.label}</strong>
-                            <p>Danh gia muc do hai long cho tieu chi nay.</p>
+                            <p>Đánh giá mức độ hài lòng cho tiêu chí này.</p>
                           </div>
                           <StarRow
                             onChange={(value) => handleDetailChange(item.id, value)}
@@ -240,8 +242,8 @@ const ReviewBarberPage = () => {
 
                   <section className="review-section">
                     <div className="section-heading">
-                      <h3>Diem noi bat</h3>
-                      <span>Chon nhieu muc neu phu hop</span>
+                      <h3>Điểm nổi bật</h3>
+                      <span>Chọn nhiều mục nếu phù hợp</span>
                     </div>
 
                     <div className="tag-grid">
@@ -263,14 +265,14 @@ const ReviewBarberPage = () => {
 
                   <section className="review-section">
                     <div className="section-heading">
-                      <h3>Nhan xet them</h3>
-                      <span>Toi da 300 ky tu</span>
+                      <h3>Nhận xét thêm</h3>
+                      <span>Tối đa 300 ký tự</span>
                     </div>
 
                     <textarea
                       maxLength={300}
                       onChange={(event) => setComment(event.target.value)}
-                      placeholder="Mo ta chi tiet ve tay nghe, thai do va khong gian trai nghiem."
+                      placeholder="Mô tả chi tiết về tay nghề, thái độ và không gian trải nghiệm."
                       rows={6}
                       value={comment}
                     />
@@ -282,7 +284,7 @@ const ReviewBarberPage = () => {
                           type="checkbox"
                         />
                         <span className="toggle-indicator" />
-                        <span>Toi se gioi thieu tho nay cho nguoi quen</span>
+                        <span>Tôi sẽ giới thiệu thợ này cho người quen</span>
                       </label>
                       <span>{comment.length}/300</span>
                     </div>
@@ -290,10 +292,10 @@ const ReviewBarberPage = () => {
 
                   <div className="review-form-actions">
                     <button className="review-primary-btn" disabled={isSubmitting || !reservation} type="submit">
-                      {isSubmitting ? 'Dang gui...' : 'Gui danh gia'}
+                      {isSubmitting ? 'Đang gửi...' : 'Gửi đánh giá'}
                     </button>
                     <Link className="review-secondary-btn" to="/profile">
-                      Bo qua luc nay
+                      Bỏ qua lúc này
                     </Link>
                   </div>
                 </form>
@@ -304,7 +306,7 @@ const ReviewBarberPage = () => {
                   <div className="barber-summary-header">
                     <img alt={barber.name} src={barber.image} />
                     <div>
-                      <p className="review-eyebrow">Tho duoc danh gia</p>
+                      <p className="review-eyebrow">Thợ được đánh giá</p>
                       <h3>{barber.name}</h3>
                       <span>{barber.role}</span>
                     </div>
@@ -313,43 +315,43 @@ const ReviewBarberPage = () => {
                   <div className="barber-summary-stats">
                     <div>
                       <strong>{overallRating}.0</strong>
-                      <span>Diem ban dang chon</span>
+                      <span>Điểm bạn đang chọn</span>
                     </div>
                     <div>
                       <strong>{selectedTags.length}</strong>
-                      <span>Diem noi bat</span>
+                      <span>Điểm nổi bật</span>
                     </div>
                   </div>
                 </section>
 
                 <section className="appointment-card">
-                  <p className="review-eyebrow">Thong tin lich hen</p>
+                  <p className="review-eyebrow">Thông tin lịch hẹn</p>
                   <div className="appointment-row">
-                    <span>Dich vu</span>
-                    <strong>{appointment?.service || 'Dich vu'}</strong>
+                    <span>Dịch vụ</span>
+                    <strong>{appointment?.service || 'Dịch vụ'}</strong>
                   </div>
                   <div className="appointment-row">
-                    <span>Ngay gio</span>
+                    <span>Ngày giờ</span>
                     <strong>
                       {appointment?.date || '--'} · {appointment?.time || '--'}
                     </strong>
                   </div>
                   <div className="appointment-row">
-                    <span>Thanh toan</span>
+                    <span>Thanh toán</span>
                     <strong>{appointment?.price || '--'}</strong>
                   </div>
                   <div className="appointment-row">
-                    <span>Ma lich hen</span>
+                    <span>Mã lịch hẹn</span>
                     <strong>{appointmentId}</strong>
                   </div>
                 </section>
 
                 <section className="review-tip-card">
-                  <p className="review-eyebrow">Goi y</p>
+                  <p className="review-eyebrow">Gợi ý</p>
                   <ul>
-                    <li>Neu tho tu van kieu toc phu hop, hay nhac ro trong nhan xet.</li>
-                    <li>Danh gia can bang giua thai do, tay nghe va do dung gio.</li>
-                    <li>Thong tin cu the se huu ich hon danh gia qua ngan.</li>
+                    <li>Nếu thợ tư vấn kiểu tóc phù hợp, hãy nhắc rõ trong nhận xét.</li>
+                    <li>Đánh giá cân bằng giữa thái độ, tay nghề và độ đúng giờ.</li>
+                    <li>Thông tin cụ thể sẽ hữu ích hơn đánh giá quá ngắn.</li>
                   </ul>
                 </section>
               </aside>

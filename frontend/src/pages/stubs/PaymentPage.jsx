@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { createPayment } from '../../services/payments';
 import { getReservationById } from '../../services/reservations';
+import { validateVoucher } from '../../services/vouchers';
 import PageLayout from '../../components/PageLayout';
 import '../PaymentPage.scss';
 
@@ -25,7 +26,7 @@ const paymentMethods = [
 const fallbackAvatar =
   'https://lh3.googleusercontent.com/aida-public/AB6AXuCxz7fMMzBws3l7xQ7X-ZTqlTrEw6apvwd9eqPOvBZqfzxWGLaJRYe6g5OX1_N08pRREmVkcsPn9TJrH9RroTkDh5m1D47F32HEbOqeesdSqNh1FjowkhEpmNtD-DoSBesg7Am7WXPahd2SqhifrPTQ1QjDx6hlII0gp-m9e226EbVZlXZcidPNE-RA6R2keDJiEW2XS_SpIk1BkJ4kyqK_HDAqS_0Rria3EToYlpNaT-YE074Ve7UJPIsc5tYMwDavk3JLCUwYRjI';
 
-const formatCurrency = (value) => `${Number(value || 0).toLocaleString('vi-VN')}d`;
+const formatCurrency = (value) => `${Number(value || 0).toLocaleString('vi-VN')}đ`;
 
 const PaymentPage = () => {
   const navigate = useNavigate();
@@ -36,7 +37,10 @@ const PaymentPage = () => {
   const [reservation, setReservation] = useState(location.state?.reservation || null);
   const [paymentInfo, setPaymentInfo] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isValidatingPromo, setIsValidatingPromo] = useState(false);
+  const [discountInfo, setDiscountInfo] = useState(null);
   const [errorMessage, setErrorMessage] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
 
   useEffect(() => {
     let active = true;
@@ -99,8 +103,30 @@ const PaymentPage = () => {
         : Number(
             location.state?.selectedServicePrice || reservationData.totalPrice || reservationData.serviceId?.price || 0
           ),
+      discount: discountInfo?.discount || 0,
+      finalTotal: (isMultiple ? Number(location.state?.selectedServiceTotal || 0) : Number(location.state?.selectedServicePrice || reservationData.totalPrice || reservationData.serviceId?.price || 0)) - (discountInfo?.discount || 0)
     };
-  }, [location.state, reservation]);
+  }, [location.state, reservation, discountInfo]);
+
+  const handleApplyPromo = async () => {
+    if (!promoCode.trim()) return;
+    
+    setIsValidatingPromo(true);
+    setErrorMessage('');
+    setSuccessMessage('');
+    
+    try {
+      const response = await validateVoucher(promoCode, bookingData.totalPrice);
+      const data = response?.data || response;
+      setDiscountInfo(data);
+      setSuccessMessage(`Áp dụng thành công! Bạn được giảm ${formatCurrency(data.discount)}`);
+    } catch (error) {
+      setDiscountInfo(null);
+      setErrorMessage(error?.message || 'Mã giảm giá không hợp lệ hoặc đã hết hạn.');
+    } finally {
+      setIsValidatingPromo(false);
+    }
+  };
 
   const handleConfirmPayment = async () => {
     setIsSubmitting(true);
@@ -153,27 +179,27 @@ const PaymentPage = () => {
               <div className="payment-step-circle">
                 <span className="material-symbols-outlined">check</span>
               </div>
-              <span>Dich vu</span>
+              <span>Dịch vụ</span>
             </div>
             <div className="payment-step done">
               <div className="payment-step-circle">
                 <span className="material-symbols-outlined">check</span>
               </div>
-              <span>Chon tho</span>
+              <span>Chọn thợ</span>
             </div>
             <div className="payment-step done">
               <div className="payment-step-circle">
                 <span className="material-symbols-outlined">check</span>
               </div>
-              <span>Thoi gian</span>
+              <span>Thời gian</span>
             </div>
             <div className="payment-step active">
               <div className="payment-step-circle">4</div>
-              <span>Thanh toan</span>
+              <span>Thanh toán</span>
             </div>
             <div className="payment-step">
               <div className="payment-step-circle">5</div>
-              <span>Hoan tat</span>
+              <span>Hoàn tất</span>
             </div>
           </section>
 
@@ -183,12 +209,12 @@ const PaymentPage = () => {
                 <div className="order-accent" />
                 <h2>
                   <span className="material-symbols-outlined">receipt_long</span>
-                  Chi tiet don dat lich
+                  Chi tiết đơn đặt lịch
                 </h2>
 
                 <div className="order-grid">
                   <div>
-                    <p className="eyebrow">Dich vu</p>
+                    <p className="eyebrow">Dịch vụ</p>
                     {bookingData.isMultiple ? (
                       <div>
                         {bookingData.services.map((service) => (
@@ -207,7 +233,7 @@ const PaymentPage = () => {
                   </div>
 
                   <div>
-                    <p className="eyebrow">Chuyen gia</p>
+                    <p className="eyebrow">Chuyên gia</p>
                     <div className="expert-row">
                       <div className="expert-avatar">
                         <img alt="Portrait of the selected barber" src={bookingData.barberAvatar} />
@@ -217,19 +243,19 @@ const PaymentPage = () => {
                   </div>
 
                   <div>
-                    <p className="eyebrow">Thoi gian</p>
+                    <p className="eyebrow">Thời gian</p>
                     <h3>
                       {bookingData.selectedTimeLabel || bookingData.selectedTime || '14:30'},
                       {' '}
-                      {bookingData.selectedDateLabel || 'Thu 7, 24 Thang 5'}
+                      {bookingData.selectedDateLabel || 'Ngày hẹn'}
                     </h3>
-                    <p>{bookingData.selectedEndTime ? `Ket thuc ${bookingData.selectedEndTime}` : 'Dang cap nhat'}</p>
+                    <p>{bookingData.selectedEndTime ? `Kết thúc ${bookingData.selectedEndTime}` : 'Đang cập nhật'}</p>
                   </div>
                 </div>
               </section>
 
               <section className="payment-methods-card">
-                <h2>Phuong thuc thanh toan</h2>
+                <h2>Phương thức thanh toán</h2>
                 <div className="payment-method-grid">
                   {paymentMethods.map((method) => (
                     <label className="payment-method-option" key={method.id}>
@@ -262,60 +288,69 @@ const PaymentPage = () => {
 
             <aside className="payment-sidebar">
               <div className="promo-card">
-                <p className="eyebrow">Ma giam gia</p>
+                <p className="eyebrow">Mã giảm giá</p>
                 <div className="promo-row">
                   <input
                     onChange={(event) => setPromoCode(event.target.value)}
-                    placeholder="Nhap ma uu dai..."
+                    placeholder="Nhập mã ưu đãi..."
                     type="text"
                     value={promoCode}
                   />
-                  <button type="button">Ap dung</button>
+                  <button 
+                    onClick={handleApplyPromo} 
+                    disabled={isValidatingPromo || !promoCode}
+                    type="button"
+                  >
+                    {isValidatingPromo ? '...' : 'Áp dụng'}
+                  </button>
                 </div>
+                {successMessage && <p className="promo-success">{successMessage}</p>}
               </div>
 
               <div className="total-card">
-                <h3>Tong thanh toan</h3>
+                <h3>Tổng thanh toán</h3>
 
-                {errorMessage ? <p className="policy-text">{errorMessage}</p> : null}
+                {errorMessage ? <p className="promo-error">{errorMessage}</p> : null}
 
                 <div className="total-breakdown">
                   <div className="total-row">
-                    <span>Dich vu chinh</span>
+                    <span>Dịch vụ chính</span>
                     <strong>{formatCurrency(bookingData.totalPrice)}</strong>
                   </div>
                   <div className="total-row">
-                    <span>Phu phi (Ho tro tho)</span>
-                    <strong>0d</strong>
+                    <span>Phụ phí (Hỗ trợ thợ)</span>
+                    <strong>0đ</strong>
                   </div>
-                  <div className="total-row discount">
-                    <span>
-                      <span className="material-symbols-outlined">confirmation_number</span>
-                      Uu dai thanh vien
-                    </span>
-                    <strong>0d</strong>
-                  </div>
+                  {bookingData.discount > 0 && (
+                    <div className="total-row discount">
+                      <span>
+                        <span className="material-symbols-outlined">confirmation_number</span>
+                        Ưu đãi Voucher ({discountInfo?.code})
+                      </span>
+                      <strong>-{formatCurrency(bookingData.discount)}</strong>
+                    </div>
+                  )}
                 </div>
 
                 <div className="grand-total">
-                  <p>Tong cong</p>
-                  <strong>{formatCurrency(bookingData.totalPrice)}</strong>
+                  <p>Tổng cộng</p>
+                  <strong>{formatCurrency(bookingData.finalTotal)}</strong>
                 </div>
 
                 <button className="confirm-btn" disabled={isSubmitting} onClick={handleConfirmPayment} type="button">
                   <span className="material-symbols-outlined">verified_user</span>
-                  {isSubmitting ? 'Dang xu ly...' : 'Xac nhan va Thanh toan'}
+                  {isSubmitting ? 'Đang xử lý...' : 'Xác nhận và Thanh toán'}
                 </button>
 
                 {paymentInfo?.referenceCode ? (
                   <p className="policy-text">
-                    Ma tham chieu: <strong>{paymentInfo.referenceCode}</strong>
+                    Mã tham chiếu: <strong>{paymentInfo.referenceCode}</strong>
                   </p>
                 ) : null}
 
                 <p className="policy-text">
-                  Bang viec xac nhan, ban dong y voi <a href="/#">Dieu khoan dich vu</a> va{' '}
-                  <a href="/#">Chinh sach bao mat</a> cua The Atelier.
+                  Bằng việc xác nhận, bạn đồng ý với <a href="/#">Điều khoản dịch vụ</a> và{' '}
+                  <a href="/#">Chính sách bảo mật</a> của The Atelier.
                 </p>
               </div>
 

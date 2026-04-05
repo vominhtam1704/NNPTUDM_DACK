@@ -6,21 +6,29 @@ import PageLayout from '../../components/PageLayout';
 import '../BookingPage.scss';
 
 const bookingSteps = [
-  { id: 1, label: 'Dich vu', active: true },
-  { id: 2, label: 'Thoi gian' },
-  { id: 3, label: 'Chi tiet' },
-  { id: 4, label: 'Hoan tat' },
+  { id: 1, label: 'Dịch vụ', active: true },
+  { id: 2, label: 'Thời gian' },
+  { id: 3, label: 'Thông tin' },
+  { id: 4, label: 'Thanh toán' },
+  { id: 5, label: 'Hoàn tất' },
 ];
 
 const fallbackBarberImage =
-  'https://lh3.googleusercontent.com/aida-public/AB6AXuDQEQYxqFRaGGbfxq86kUvBsM1zk9DtiHZOsVRutxsyEi3fIqN_rT7VW4ldDNjHXB1ft5tlKSuYcY6mosTdpEbnz_Up2MBJW7GxHaSZI1AqRd0qjQQ2SyTZZ7E4v1H0wogcXIaRF7r9jkCW2Fev9T9BN-W_EGEG2cPG6ENdJ3uowLlP5QSb7brvshW-aqSkbQRL6yUyDieCktkQGUCrZPUcU6ZeDY2p4CAusn2o9fpsxdUj2-jQR4530hvgc_O3iek7zXfPckFF4lY';
+  'https://images.unsplash.com/photo-1599305090598-fe179d501227?auto=format&fit=crop&q=80&w=800';
 
-const formatCurrency = (value) => `${Number(value || 0).toLocaleString('vi-VN')}d`;
+const formatCurrency = (value) => `${Number(value || 0).toLocaleString('vi-VN')}đ`;
+
+const getAvatarUrl = (path) => {
+  if (!path) return fallbackBarberImage;
+  if (path.startsWith('http')) return path;
+  const baseUrl = '';
+  return `${baseUrl}${path.startsWith('/') ? '' : '/'}${path}`;
+};
 
 const toServiceViewModel = (service) => ({
   id: service._id,
   name: service.name,
-  description: service.description || 'Dich vu cao cap danh cho khach hang cua salon',
+  description: service.description || 'Dịch vụ cao cấp dành cho khách hàng của salon',
   price: Math.max(Number(service.price) || 0, 0),
   duration: Math.max(Number(service.duration) || 30, 30),
 });
@@ -28,10 +36,18 @@ const toServiceViewModel = (service) => ({
 const BookingPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const queryParams = new URLSearchParams(location.search);
+  const queryBarberId = queryParams.get('barberId');
+  const queryServiceId = queryParams.get('serviceId');
+
   const [services, setServices] = useState([]);
   const [barbers, setBarbers] = useState([]);
-  const [selectedServiceIds, setSelectedServiceIds] = useState([]);
-  const [selectedBarberId, setSelectedBarberId] = useState(location.state?.selectedBarberId || '');
+  const [selectedServiceIds, setSelectedServiceIds] = useState(
+    queryServiceId ? [queryServiceId] : (location.state?.selectedServiceIds || [])
+  );
+  const [selectedBarberId, setSelectedBarberId] = useState(
+    queryBarberId || location.state?.selectedBarberId || ''
+  );
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState('');
   const [isBarberModalOpen, setIsBarberModalOpen] = useState(false);
@@ -235,7 +251,7 @@ const BookingPage = () => {
                 </div>
                 <div className="barber-panel-content">
                   <div className="barber-panel-avatar">
-                    <img alt={selectedBarber.name} src={selectedBarber.avatar || fallbackBarberImage} />
+                    <img alt={selectedBarber.name} src={getAvatarUrl(selectedBarber.avatar)} />
                     <div className="barber-verified">
                       <span className="material-symbols-outlined filled">verified</span>
                     </div>
@@ -317,7 +333,7 @@ const BookingPage = () => {
                     onClick={() => handleBarberSelect(barber._id)}
                   >
                     <div className="barber-avatar">
-                      <img src={barber.avatar || fallbackBarberImage} alt={barber.name} />
+                      <img src={getAvatarUrl(barber.avatar)} alt={barber.name} />
                       {selectedBarberId === barber._id && (
                         <div className="check-badge">
                           <span className="material-symbols-outlined filled">check_circle</span>

@@ -1,13 +1,13 @@
 .review-page {
-  --review-bg: #f4f7fb;
+  --review-bg: #f8fbfa;
   --review-surface: #ffffff;
-  --review-surface-alt: #eef6f5;
-  --review-outline: #d7e3e2;
-  --review-text: #0f2230;
-  --review-muted: #5c6b75;
+  --review-surface-alt: #f1f7f6;
+  --review-outline: rgba(226, 232, 240, 0.8);
+  --review-text: #0a2e2d;
+  --review-muted: #64748b;
   --review-primary: #006362;
-  --review-primary-soft: #d9f3f2;
-  --review-warm: #c17c31;
+  --review-primary-soft: rgba(0, 99, 98, 0.1);
+  --review-warm: #864725;
 
   min-height: calc(100vh - 5rem);
   background: var(--review-bg);

@@ -5,6 +5,15 @@ import { getPublicBarbers } from '../services/barbers';
 import PageLayout from '../components/PageLayout';
 import './HomePage.scss';
 
+const fallbackBarberImage = 'https://images.unsplash.com/photo-1599305090598-fe179d501227?auto=format&fit=crop&q=80&w=800';
+
+const getAvatarUrl = (path) => {
+  if (!path) return fallbackBarberImage;
+  if (path.startsWith('http')) return path;
+  const baseUrl = '';
+  return `${baseUrl}${path.startsWith('/') ? '' : '/'}${path}`;
+};
+
 function HomePage() {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -54,7 +63,7 @@ function HomePage() {
   }, [barbers, searchText]);
 
   const handleSearch = () => {
-    navigate('/booking', {
+    navigate(`/booking?search=${searchText}&date=${dateText}`, {
       state: {
         searchKeyword: searchText,
         preferredDate: dateText,
@@ -63,7 +72,7 @@ function HomePage() {
   };
 
   const handleBookBarber = (barber) => {
-    navigate('/booking', {
+    navigate(`/booking?barberId=${barber._id}`, {
       state: {
         selectedBarberId: barber._id,
         selectedBarberName: barber.name,
@@ -149,7 +158,7 @@ function HomePage() {
                 <h2>Nghệ Nhân Hàng Đầu</h2>
                 <p>Đội ngũ chuyên gia được tuyển chọn kỹ lưỡng</p>
               </div>
-              <button className="view-all-btn" onClick={() => navigate('/booking')} type="button">
+              <button className="view-all-btn" onClick={() => navigate('/barbers')} type="button">
                 Xem tất cả <span className="material-symbols-outlined">arrow_forward</span>
               </button>
             </div>
@@ -169,7 +178,7 @@ function HomePage() {
                     <div className="editorial-barber-image">
                       <img
                         alt={barber.name}
-                        src={barber.avatar || 'https://images.unsplash.com/photo-1585747860715-2ba37e788b70?auto=format&fit=crop&q=80&w=800'}
+                        src={getAvatarUrl(barber.avatar)}
                       />
                       <div className="editorial-rating-chip">
                         <span className="material-symbols-outlined filled">star</span>

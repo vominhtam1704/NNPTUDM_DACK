@@ -5,10 +5,16 @@ import { createReservation } from '../../services/reservations';
 import PageLayout from '../../components/PageLayout';
 import '../BookingDetailsPage.scss';
 
-const fallbackBarberImage =
-  'https://lh3.googleusercontent.com/aida-public/AB6AXuCX-HLAPDHidwv5MLmzEVx3HW-1a9rnom5vrBl-o1rPff7O_URfPq8yZd7wjl2j2N_desUXuTggD2w3SeAATkWSRyS_i0VvKC7NbWC9GydrNep7zSGCzISwkBghJxwDo4Tvb96FvET0I1bwlIlbIFmWSwhh-a3c_crAPiLyUoab9fXSkQkIb6nm5ZJhSZ9Lz1jVihQ496uGKhOg9x0gb7bSjoRkRIpsBmcX5W7OGDQTR9Fm3CTAIGzdWMQyDbTb0VDP0O4ShG29XFM';
+const fallbackBarberImage = 'https://images.unsplash.com/photo-1599305090598-fe179d501227?auto=format&fit=crop&q=80&w=800';
 
-const formatCurrency = (value) => `${Number(value || 0).toLocaleString('vi-VN')}d`;
+const getAvatarUrl = (path) => {
+  if (!path) return fallbackBarberImage;
+  if (path.startsWith('http')) return path;
+  const baseUrl = '';
+  return `${baseUrl}${path.startsWith('/') ? '' : '/'}${path}`;
+};
+
+const formatCurrency = (value) => `${Number(value || 0).toLocaleString('vi-VN')}đ`;
 
 const BookingDetailsPage = () => {
   const navigate = useNavigate();
@@ -39,17 +45,17 @@ const BookingDetailsPage = () => {
     return {
       isMultiple: false,
       id: bookingState.selectedServiceId || '',
-      name: bookingState.selectedServiceName || 'Executive Fade & Style',
-      description: bookingState.selectedServiceDescription || 'Cat toc, tao kieu va Goi dau',
-      price: Number(bookingState.selectedServicePrice || 450000),
+      name: bookingState.selectedServiceName || 'Dịch vụ đã chọn',
+      description: bookingState.selectedServiceDescription || 'Gói cắt tóc chuyên nghiệp',
+      price: Number(bookingState.selectedServicePrice || 0),
     };
   }, [bookingState]);
 
   const selectedBarber = useMemo(
     () => ({
       id: bookingState.selectedBarberId || '',
-      name: bookingState.selectedBarberName || 'Marcello V.',
-      avatar: bookingState.selectedBarberAvatar || fallbackBarberImage,
+      name: bookingState.selectedBarberName || 'Stylist',
+      avatar: getAvatarUrl(bookingState.selectedBarberAvatar),
     }),
     [bookingState]
   );
@@ -137,35 +143,35 @@ const BookingDetailsPage = () => {
               <div className="step-circle">
                 <span className="material-symbols-outlined filled">check</span>
               </div>
-              <span>Dich vu</span>
+              <span>Dịch vụ</span>
             </div>
             <div className="step-item done">
               <div className="step-circle">
                 <span className="material-symbols-outlined filled">check</span>
               </div>
-              <span>Thoi gian</span>
+              <span>Thời gian</span>
             </div>
             <div className="step-item active">
               <div className="step-circle">3</div>
-              <span>Thong tin</span>
+              <span>Thông tin</span>
             </div>
             <div className="step-item">
               <div className="step-circle">4</div>
-              <span>Xac nhan</span>
+              <span>Thanh toán</span>
             </div>
             <div className="step-item">
               <div className="step-circle">5</div>
-              <span>Hoan tat</span>
+              <span>Hoàn tất</span>
             </div>
           </section>
 
           <div className="details-grid">
             <section className="details-form-wrap">
               <div className="details-header">
-                <h1>Chi tiet thong tin</h1>
+                <h1>Chi tiết thông tin</h1>
                 <p>
-                  Vui long cung cap thong tin lien he cua ban de chung toi co the phuc vu tot
-                  nhat.
+                  Vui lòng cung cấp thông tin liên hệ của bạn để chúng tôi có thể phục vụ tốt
+                  nhất.
                 </p>
               </div>
 
@@ -174,7 +180,7 @@ const BookingDetailsPage = () => {
               <form className="details-form" onSubmit={handleSubmit}>
                 <div className="form-grid">
                   <label className="field">
-                    <span>Ho va ten</span>
+                    <span>Họ và tên</span>
                     <input
                       name="fullName"
                       onChange={handleChange}
@@ -185,7 +191,7 @@ const BookingDetailsPage = () => {
                   </label>
 
                   <label className="field">
-                    <span>So dien thoai</span>
+                    <span>Số điện thoại</span>
                     <input
                       name="phone"
                       onChange={handleChange}
@@ -197,7 +203,7 @@ const BookingDetailsPage = () => {
                 </div>
 
                 <label className="field">
-                  <span>Dia chi Email</span>
+                  <span>Địa chỉ Email</span>
                   <input
                     name="email"
                     onChange={handleChange}
@@ -208,11 +214,11 @@ const BookingDetailsPage = () => {
                 </label>
 
                 <label className="field">
-                  <span>Ghi chu them</span>
+                  <span>Ghi chú thêm</span>
                   <textarea
                     name="note"
                     onChange={handleChange}
-                    placeholder="Ban co yeu cau dac biet nao khong? (Vi du: Kieu toc mong muon, di ung...)"
+                    placeholder="Bạn có yêu cầu đặc biệt nào không? (Ví dụ: Kiểu tóc mong muốn, dị ứng...)"
                     rows="4"
                     value={formData.note}
                   />
@@ -221,11 +227,11 @@ const BookingDetailsPage = () => {
                 <div className="form-actions">
                   <button className="back-btn" onClick={() => navigate('/booking/time', { state: bookingState })} type="button">
                     <span className="material-symbols-outlined">arrow_back</span>
-                    Quay lai
+                    Quay lại
                   </button>
 
                   <button className="next-btn" disabled={isSubmitting} type="submit">
-                    {isSubmitting ? 'Dang tao lich...' : 'Tiep tuc buoc 4'}
+                    {isSubmitting ? 'Đang tạo lịch...' : 'Tiếp tục bước 4'}
                     <span className="material-symbols-outlined">arrow_forward</span>
                   </button>
                 </div>
@@ -236,12 +242,12 @@ const BookingDetailsPage = () => {
               <div className="summary-panel">
                 <h3>
                   <span className="material-symbols-outlined filled">list_alt</span>
-                  Tom tat lich hen
+                  Tóm tắt lịch hẹn
                 </h3>
 
                 <div className="summary-content">
                   <div className="summary-service">
-                    <p className="eyebrow">Dich vu da chon</p>
+                    <p className="eyebrow">Dịch vụ đã chọn</p>
                     {selectedService.isMultiple ? (
                       <div className="summary-services-list">
                         {selectedService.services.map((service) => (
@@ -268,7 +274,7 @@ const BookingDetailsPage = () => {
                   <div className="summary-expert">
                     <img alt="Master Barber" src={selectedBarber.avatar} />
                     <div>
-                      <p className="eyebrow">Chuyen gia</p>
+                      <p className="eyebrow">Chuyên gia</p>
                       <h4>{selectedBarber.name}</h4>
                     </div>
                   </div>
@@ -278,7 +284,7 @@ const BookingDetailsPage = () => {
                       <p className="eyebrow">Ngay</p>
                       <div>
                         <span className="material-symbols-outlined">calendar_today</span>
-                        <span>{bookingState.selectedDateLabel || 'Thu 6, 24 Thang 5'}</span>
+                        <span>{bookingState.selectedDateLabel || 'Ngày hẹn'}</span>
                       </div>
                     </div>
 
@@ -286,7 +292,7 @@ const BookingDetailsPage = () => {
                       <p className="eyebrow">Gio</p>
                       <div>
                         <span className="material-symbols-outlined">schedule</span>
-                        <span>{bookingState.selectedTimeLabel || bookingState.selectedTime || '10:30 AM'}</span>
+                        <span>{bookingState.selectedTimeLabel || bookingState.selectedTime || 'Giờ hẹn'}</span>
                       </div>
                     </div>
                   </div>
@@ -294,7 +300,7 @@ const BookingDetailsPage = () => {
                   <div className="summary-divider" />
 
                   <div className="summary-total">
-                    <span>Tong cong</span>
+                    <span>Tổng cộng</span>
                     <strong>
                       {formatCurrency(
                         selectedService.isMultiple ? selectedService.totalPrice : selectedService.price

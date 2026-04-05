@@ -10,6 +10,7 @@ import HomePage from './pages/HomePage';
 import {
   AccountProfilePage,
   BarberProfilePage,
+  BarberListPage,
   LoginPage,
   SignupPage,
   BookingPage,
@@ -53,6 +54,7 @@ function App() {
         <Routes>
         {/* Public Routes */}
         <Route path="/" element={<RootRedirect />} />
+        <Route path="/barbers" element={<BarberListPage />} />
         <Route path="/barbers/:barberId" element={<BarberProfilePage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />

@@ -310,7 +310,7 @@ exports.getPublicBarbers = async (req, res) => {
         name: barber.name,
         avatar: barber.avatar,
         bio,
-        rating: review ? Number(review.averageRating.toFixed(2)) : 0,
+        rating: review ? Number(review.averageRating.toFixed(2)) : 5,
         totalReviews: review?.totalReviews || 0,
         totalAppointments: reservations?.totalAppointments || 0,
         reviewPreview: preview || null,
@@ -398,8 +398,8 @@ exports.getPublicBarberProfile = async (req, res) => {
             createdAt: barber.createdAt,
           },
           stats: {
-            averageRating: statBlock ? Number(statBlock.averageRating.toFixed(1)) : 0,
-            totalReviews: statBlock?.totalReviews || 0,
+            averageRating: statBlock && statBlock.length > 0 ? Number(statBlock[0].averageRating.toFixed(1)) : 5,
+            totalReviews: statBlock && statBlock.length > 0 ? statBlock[0].totalReviews : 0,
             totalAppointments: reservations.length,
             completedAppointments,
             yearsActive,
@@ -407,7 +407,7 @@ exports.getPublicBarberProfile = async (req, res) => {
           },
           specialties,
           services,
-          recentReviews: reviews,
+          reviews,
           schedule: [
             { label: 'Thu Hai - Thu Sau', hours: '09:00 - 21:00', isOff: false },
             { label: 'Thu Bay', hours: '08:00 - 22:00', isOff: false },
@@ -439,20 +439,24 @@ exports.uploadAvatar = async (req, res) => {
 
     const avatarUrl = `/uploads/${req.file.filename}`;
 
-    // ===== DELETE OLD AVATAR FILE =====
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json(
+        formatError('User not found')
+      );
+    }
+
+    // ===== FILE CLEANUP DISABLED (Tạm tắt để xử lý lỗi 404) =====
+    /*
     const path = require('path');
     const fs = require('fs');
-    const user = await User.findById(userId);
     if (user && user.avatar && user.avatar.startsWith('/uploads/')) {
       const oldAvatarPath = path.join(__dirname, `..${user.avatar}`);
       if (fs.existsSync(oldAvatarPath)) {
-        try {
-          fs.unlinkSync(oldAvatarPath);
-        } catch (err) {
-          console.error('Error deleting old avatar:', err);
-        }
+        try { fs.unlinkSync(oldAvatarPath); } catch (err) { console.error('Error deleting old avatar:', err); }
       }
     }
+    */
 
     const updatedUser = await User.findByIdAndUpdate(
       userId,
@@ -460,14 +464,8 @@ exports.uploadAvatar = async (req, res) => {
       { new: true }
     ).select('-password');
 
-    if (!user) {
-      return res.status(404).json(
-        formatError('User not found')
-      );
-    }
-
     res.status(200).json(
-      formatSuccess(user, 'Avatar uploaded successfully')
+      formatSuccess(updatedUser, 'Avatar uploaded successfully')
     );
   } catch (error) {
     console.error('Upload avatar error:', error);

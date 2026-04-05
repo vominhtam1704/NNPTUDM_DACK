@@ -217,9 +217,19 @@ export function AuthProvider({ children }) {
 
       if (token && userData) {
         try {
-          setUser(JSON.parse(userData));
+          const storedUser = JSON.parse(userData);
+          setUser(storedUser);
           setAccessToken(token);
           setIsAuthenticated(true);
+          
+          // Fetch fresh profile to update any stale fields (like avatar URLs)
+          getCurrentUser(token).then(freshUser => {
+            if (freshUser) {
+              const latest = freshUser.data || freshUser;
+              setUser(latest);
+              localStorage.setItem('user', JSON.stringify(latest));
+            }
+          }).catch(err => console.warn('Profile sync failed:', err));
         } catch (err) {
           console.error('Auth initialization error:', err);
           // Skip logout call to avoid effects

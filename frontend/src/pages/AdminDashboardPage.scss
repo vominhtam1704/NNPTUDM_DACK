@@ -6,22 +6,22 @@
 .admin-cms {
   --primary: #006362;
   --primary-dark: #004d4c;
-  --primary-light: #e0f4f4;
-  --secondary: #5d5f5f;
+  --primary-light: rgba(0, 99, 98, 0.08);
+  --secondary: #64748b;
   --tertiary: #864725;
-  --tertiary-light: #fdf0e8;
-  --bg: #f7f9ff;
+  --tertiary-light: rgba(134, 71, 37, 0.1);
+  --bg: #f8fbfa;
   --surface: #ffffff;
-  --on-surface: #091d2e;
-  --error: #ba1a1a;
-  --error-light: #fff0f0;
-  --success: #15803d;
-  --success-light: #f0fdf4;
-  --warning: #b45309;
-  --warning-light: #fffbeb;
-  --info: #0369a1;
-  --info-light: #f0f9ff;
-  --border: #e2e8f0;
+  --on-surface: #0a2e2d;
+  --error: #ef4444;
+  --error-light: #fee2e2;
+  --success: #10b981;
+  --success-light: #d1fae5;
+  --warning: #f59e0b;
+  --warning-light: #fef3c7;
+  --info: #3b82f6;
+  --info-light: #dbeafe;
+  --border: rgba(226, 232, 240, 0.8);
   --muted: #64748b;
   --sidebar-w: 15rem;
 
@@ -122,30 +122,39 @@
 .cms-nav-item {
   display: flex;
   align-items: center;
+  gap: 1rem;
   width: 100%;
-  padding: 0.75rem 1rem;
+  padding: 0.85rem 1rem;
   border: none;
-  border-radius: 10px;
+  border-radius: 12px;
   background: transparent;
   color: var(--muted);
   font-family: 'Inter', sans-serif;
-  font-size: 0.88rem;
+  font-size: 0.9rem;
   font-weight: 600;
   text-align: left;
   cursor: pointer;
-  transition: background 0.16s, color 0.16s, transform 0.16s;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.cms-nav-item .material-symbols-outlined {
+  font-size: 1.25rem;
+  font-variation-settings: 'FILL' 0, 'wght' 500, 'GRAD' 0, 'opsz' 24;
 }
 
 .cms-nav-item:hover {
-  background: var(--primary-light);
+  background: var(--bg);
   color: var(--primary);
-  transform: translateX(2px);
+  transform: translateX(4px);
 }
 
 .cms-nav-item.active {
   background: var(--primary-light);
   color: var(--primary);
-  border-left: 3px solid var(--primary);
+}
+
+.cms-nav-item.active .material-symbols-outlined {
+  font-variation-settings: 'FILL' 1, 'wght' 600, 'GRAD' 0, 'opsz' 24;
 }
 
 .cms-sidebar-footer {
@@ -382,6 +391,109 @@
   color: var(--primary);
 }
 
+/* ============================================
+   CMS HEADER & TABS
+   ============================================ */
+.cms-header {
+  background: var(--surface);
+  padding: 1.5rem 2rem 0 2rem;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.cms-brand-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.cms-brand-info h1 {
+  font-size: 1.75rem;
+  color: var(--primary);
+  letter-spacing: -0.02em;
+}
+
+.cms-user-pill {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: var(--bg);
+  padding: 0.5rem 1rem 0.5rem 0.5rem;
+  border-radius: 50px;
+  border: 1px solid var(--border);
+}
+
+.cms-user-pill .avatar {
+  width: 2rem;
+  height: 2rem;
+  background: var(--primary);
+  color: #fff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 0.85rem;
+}
+
+.cms-user-pill .name {
+  font-weight: 600;
+  font-size: 0.88rem;
+  color: var(--on-surface);
+}
+
+.cms-tab-nav {
+  display: flex;
+  gap: 0.25rem;
+  margin-bottom: -1px; /* Align with bottom border */
+}
+
+.cms-tab-item {
+  padding: 0.85rem 1.25rem;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  font-family: 'Inter', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  position: relative;
+  transition: color 0.2s;
+}
+
+.cms-tab-item:hover {
+  color: var(--primary);
+}
+
+.cms-tab-item.active {
+  color: var(--primary);
+}
+
+.cms-tab-item.active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--primary);
+  border-radius: 3px 3px 0 0;
+}
+
+/* ============================================
+   CONTENT SHELL
+   ============================================ */
+.cms-content-shell {
+  flex: 1;
+  overflow-y: auto;
+  background: var(--bg);
+}
+
+/* ============================================
+   TOGGLE LABEL
+   ============================================ */
 .toggle-label {
   display: flex;
   align-items: center;

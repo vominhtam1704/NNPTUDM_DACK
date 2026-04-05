@@ -66,7 +66,9 @@ function BarberDashboardPage() {
     setError('');
     try {
       const res = await getMyReservations();
-      setAllBookings(Array.isArray(res) ? res : (res?.reservations || []));
+      // Handle standardized response for reservations (returns full body)
+      const data = Array.isArray(res) ? res : (res?.data || res?.reservations || []);
+      setAllBookings(data);
     } catch (e) {
       setError(e.message || 'Không thể tải lịch hẹn');
     } finally {
